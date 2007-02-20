@@ -1,0 +1,15 @@
+MANIFEST
+CHANGES
+Makefile.PL
+GMPf.pm
+GMPf.xs
+INLINE.h
+README
+check.c
+comp.c
+version.c
+t/test1.t
+t/overload.t
+t/use64bitint.t
+t/new.t
+t/not_zero.t

@@ -1,0 +1,7 @@
+0.14
+ - First CPAN release
+ - No longer assign Exporter and DynaLoader to @Math::GMPf::ISA.
+ - Fix bug in tests 35, 26 and 37 in overload.t
+ - Add support for perls built with -Duse64bitint.
+ - add new() function/method to facilitate initialization/assignment
+
