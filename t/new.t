@@ -6,6 +6,8 @@ use Config;
 
 print "1..4\n";
 
+print "# Using gmp version ", Math::GMPf::gmp_v(), "\n";
+
 my $ui = 123569;
 my $si = -19907;
 my $d = -1.625;
@@ -108,10 +110,10 @@ else {
   if($f27 != $f28) {$ok .= 'i'}
 }
 
-#my $f29 = Math::GMPf->new($26);
-#if($f29 == $d) {$ok .= 'j'}
+my $f29 = Math::GMPf->new($f26);
+if($f29 == $d) {$ok .= 'j'}
 
-if($ok eq 'bcdefghi') {print "ok 3\n"}
+if($ok eq 'bcdefghij') {print "ok 3\n"}
 else {print "not ok 3 $ok\n"}
 
 #############################
@@ -121,7 +123,7 @@ my $bi = Math::BigInt->new(123456789);
 $ok = '';
 
 eval{my $f30 = Math::GMPf->new(17, 12);};
-if($@ =~ /Too many arguments supplied to new\(\) \- expected only two/) {$ok = 'a'}
+if($@ =~ /Too many arguments supplied to new\(\) \- expected only one/) {$ok = 'a'}
 
 eval{my $f31 = Math::GMPf::new(17, 12);};
 if($@ =~ /Too many arguments supplied to new\(\) \- expected only one/) {$ok .= 'b'}
@@ -138,14 +140,12 @@ if($@ =~ /Inappropriate argument/) {$ok .= 'e'}
 eval{my $f35 = Math::GMPf::new($bi);};
 if($@ =~ /Inappropriate argument/) {$ok .= 'f'}
 
-#eval{my $f36 = Math::GMPf->new($26, 10);};
-#if($@ =~ /Too many arguments supplied to new\(\) \- expected only two/) {$ok .= 'g'}
-#print $@, "\n";
+eval{my $f36 = Math::GMPf->new($f27, 10);};
+if($@ =~ /Too many arguments supplied to new\(\) \- expected only one/) {$ok .= 'g'}
 
-#eval{my $f37 = Math::GMPf::new($26, 10);};
-#if($@ =~ /Too many arguments supplied to new\(\) \- expected only one/) {$ok .= 'h'}
-#print $@, "\n";
+eval{my $f37 = Math::GMPf::new($f27, 10);};
+if($@ =~ /Too many arguments supplied to new\(\) \- expected only one/) {$ok .= 'h'}
 
-if($ok eq 'abcdef') {print "ok 4\n"}
+if($ok eq 'abcdefgh') {print "ok 4\n"}
 else {print "not ok 4 $ok\n"}
 

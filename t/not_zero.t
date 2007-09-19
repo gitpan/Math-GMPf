@@ -8,6 +8,8 @@ use Config;
 
 print"1..3\n";
 
+print "# Using gmp version ", Math::GMPf::gmp_v(), "\n";
+
 Rmpf_set_default_prec(65);
 
 my $n = ~0;

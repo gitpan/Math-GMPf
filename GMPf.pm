@@ -32,7 +32,8 @@ use overload
 
     @Math::GMPf::EXPORT_OK = qw(
 Rmpf_abs Rmpf_add Rmpf_add_ui Rmpf_ceil Rmpf_clear Rmpf_clear_mpf Rmpf_clear_ptr
-Rmpf_cmp Rmpf_cmp_d Rmpf_cmp_si Rmpf_cmp_ui Rmpf_div Rmpf_div_2exp Rmpf_div_ui
+Rmpf_cmp Rmpf_cmp_d Rmpf_cmp_si Rmpf_cmp_ui 
+Rmpf_deref2 Rmpf_div Rmpf_div_2exp Rmpf_div_ui
 Rmpf_eq Rmpf_fits_sint_p Rmpf_fits_slong_p Rmpf_fits_sshort_p Rmpf_fits_uint_p 
 Rmpf_fits_ulong_p Rmpf_fits_ushort_p Rmpf_floor Rmpf_get_d Rmpf_get_d_2exp 
 Rmpf_get_default_prec Rmpf_get_prec Rmpf_get_si Rmpf_get_str Rmpf_get_ui 
@@ -46,13 +47,14 @@ Rmpf_set_prec_raw Rmpf_set_q Rmpf_set_si Rmpf_set_str Rmpf_set_ui Rmpf_set_z
 Rmpf_sgn Rmpf_sqrt Rmpf_sqrt_ui Rmpf_sub Rmpf_sub_ui Rmpf_swap Rmpf_trunc 
 Rmpf_ui_div Rmpf_ui_sub Rmpf_urandomb
     );
-    $Math::GMPf::VERSION = '0.14';
+    $Math::GMPf::VERSION = '0.15';
 
     DynaLoader::bootstrap Math::GMPf $Math::GMPf::VERSION;
 
     %Math::GMPf::EXPORT_TAGS =(mpf => [qw(
 Rmpf_abs Rmpf_add Rmpf_add_ui Rmpf_ceil Rmpf_clear Rmpf_clear_mpf Rmpf_clear_ptr
-Rmpf_cmp Rmpf_cmp_d Rmpf_cmp_si Rmpf_cmp_ui Rmpf_div Rmpf_div_2exp Rmpf_div_ui
+Rmpf_cmp Rmpf_cmp_d Rmpf_cmp_si Rmpf_cmp_ui 
+Rmpf_deref2 Rmpf_div Rmpf_div_2exp Rmpf_div_ui
 Rmpf_eq Rmpf_fits_sint_p Rmpf_fits_slong_p Rmpf_fits_sshort_p Rmpf_fits_uint_p 
 Rmpf_fits_ulong_p Rmpf_fits_ushort_p Rmpf_floor Rmpf_get_d Rmpf_get_d_2exp 
 Rmpf_get_default_prec Rmpf_get_prec Rmpf_get_si Rmpf_get_str Rmpf_get_ui 
@@ -70,72 +72,98 @@ Rmpf_ui_div Rmpf_ui_sub Rmpf_urandomb
 sub dl_load_flags {0} # Prevent DynaLoader from complaining and croaking
 
 sub new {
-    if(@_ > 3) {die "Too many arguments supplied to new()"}
-    my @ret = ();
+
+    # This function caters for 2 possibilities:
+    # 1) that 'new' has been called OOP style - in which 
+    #    case there will be a maximum of 3 args
+    # 2) that 'new' has been called as a function - in
+    #    which case there will be a maximum of 2 args.
+    # If there are no args, then we just want to return an
+    # initialized Math::GMPf object
     if(!@_) {return Rmpf_init()}
-    if(ref($_[0]) || $_[0] ne "Math::GMPf") {
-      my $type = _itsa($_[0]);
+   
+    if(@_ > 3) {die "Too many arguments supplied to new()"}
 
-      if(!$type) {die "Inappropriate argument supplied to new()"}
+    # If 'new' has been called OOP style, the first arg is the string
+    # "Math::GMPf" which we don't need - so let's remove it. However,
+    # if the first arg is a Math::GMPf object (which is a possibility),
+    # then we'll get a fatal error when we check it for equivalence to
+    # the string "Math::GMPf". So we first need to check that it's not
+    # an object - which we'll do by using the ref() function:
+    if(!ref($_[0]) && $_[0] eq "Math::GMPf") {
+      shift;
+      if(!@_) {return Rmpf_init()}
+      } 
 
-      if($type == 1 || $type == 2) { # UOK or IOK
-        if(@_ > 1) {die "Too many arguments supplied to new() - expected only one"}
-        return Rmpf_init_set_str($_[0], 10);
+    # @_ can now contain a maximum of 2 args - the value, and iff the value is
+    # a string, (optionally) the base of the numeric string.
+    if(@_ > 2) {die "Too many arguments supplied to new() - expected no more than two"}
 
-      }
-      if($type == 3) { # NOK
-        if(@_ > 1) {die "Too many arguments supplied to new() - expected only one"}
-        return Rmpf_init_set_d($_[0]);
-      }
-      if($type == 4) { # POK
-        if(@_ > 2) {die "Too many arguments supplied to new() - expected no more than two"}
-        if(@_ == 2) {return Rmpf_init_set_str($_[0], $_[1])}
-        else {return Rmpf_init_set_str($_[0], 10)}
-      }
-      if($type == 5) { # Math::GMPf object
-        if(@_ > 1) {die "Too many arguments supplied to new() - expected only one"}
-        return Rmpf_init_set($_[0]);
-      }
-    }
+    my ($arg1, $type, $base);
 
-    if($_[0] ne "Math::GMPf") {die "Invalid argument supplied to new()"} 
+    # $_[0] is the value, $_[1] (if supplied) is the base of the number
+    # in the string $[_0].
+    $arg1 = shift;
+    $base = 0;
 
-    if(@_ == 1) {return Rmpf_init()}
-
-    my $type = _itsa($_[1]);
-
+    $type = _itsa($arg1);
     if(!$type) {die "Inappropriate argument supplied to new()"}
 
+    # Create a Math::GMPz object that has $arg1 as its value.
+    # Die if there are any additional args (unless $type == 4)
     if($type == 1 || $type == 2) { # UOK or IOK
-      if(@_ > 2) {die "Too many arguments supplied to new() - expected only two"}
-      return Rmpf_init_set_str($_[1], 10);
+      if(@_ ) {die "Too many arguments supplied to new() - expected only one"}
+      return Rmpf_init_set_str($arg1, 10);
     }
+
     if($type == 3) { # NOK
-      if(@_ > 2) {die "Too many arguments supplied to new() - expected only two"}
-      return Rmpf_init_set_d($_[1]);
+      if(@_ ) {die "Too many arguments supplied to new() - expected only one"}
+      if(Math::GMPf::_has_longdouble()) {
+        my $ret = Rmpf_init();
+        _Rmpf_set_ld($ret, $arg1);
+        return $ret;
+      }
+      return Rmpf_init_set_d($arg1);
+
     }
+    
     if($type == 4) { # POK
-      if(@_ == 3) {return Rmpf_init_set_str($_[1], $_[2])}
-      else {return Rmpf_init_set_str($_[1], 10)}
+      if(@_ > 1) {die "Too many arguments supplied to new() - expected no more than two"}
+      $base = shift if @_;
+      if($base < 0 || $base == 1 || $base > 36) {die "Invalid value for base"}
+      return Rmpf_init_set_str($arg1, $base);
     }
-    if($type == 5) { # Math::GMPf object
-      if(@_ > 2) {die "Too many arguments supplied to new() - expected only two"}
-      return Rmpf_init_set($_[1]);
+
+    if($type == 6) { # Math::GMPf object
+      if(@_) {die "Too many arguments supplied to new() - expected only one"}
+      return Rmpf_init_set($arg1);
     }
 }
 
+sub Rmpf_out_str {
+    if(@_ == 3) { return _Rmpf_out_str($_[0], $_[1], $_[2]) }
+    elsif(@_ == 4) { return _Rmpf_out_str2($_[0], $_[1], $_[2], $_[3]) }
+    else {die "Wrong number of arguments supplied to Rmpf_out_str()"}
+}
 
 sub Rmpf_get_str {
-    my @ret = Rmpf_deref2($_[0], $_[1], $_[2]);
-    if(substr($ret[0], 0, 1) eq '-') {
-       substr($ret[0], 0, 1, '');
-       return "-." . $ret[0] . '@' . $ret[1];
+    my $sep = $_[1] <=10 ? 'e' : '@';
+    my ($mantissa, $exponent) = Rmpf_deref2($_[0], $_[1], $_[2]);
+
+    if($mantissa =~ /\-/ && $mantissa !~ /[^0,\-]/) {return '-0'}
+    if($mantissa !~ /[^0]/ ) {return '0'}
+
+    if(substr($mantissa, 0, 1) eq '-') {
+       substr($mantissa, 0, 1, '');
+       return "-0." . $mantissa . $sep . $exponent if $exponent;
+       return "-0." . $mantissa;
        }
-    return "." . $ret[0] . '@' . $ret[1];
+    return "0." . $mantissa . $sep . $exponent if $exponent;
+    return "0." . $mantissa;
 }
 
 sub overload_string {
-   return Rmpf_get_str($_[0], 10, 0);
+    return Rmpf_get_str($_[0], 10, 0);
 }
 
 sub _rewrite {
@@ -163,7 +191,7 @@ sub _rewrite {
 }
 
 sub Rmpf_printf {
-    local($| = 1); # Make sure the output gets presented in the correct sequence.
+    local $| = 1; # Make sure the output gets presented in the correct sequence.
     if(@_ == 1) {printf(shift)}
 
     else {
@@ -495,6 +523,15 @@ __END__
     accurately represented by $op are ever generated.  If $digits
     is 0 then that accurate maximum number of digits are generated.
 
+   ($man, $exp) = Rmpfr_deref2($op, $base, $digits);
+    Returns the mantissa to $man (as a string of digits, prefixed with
+    a minus sign if $op is negative), and returns the exponent to $exp.
+    There's an implicit decimal point to the left of the first digit in
+    $man. The third argument to Rmpfr_deref2() specifies the number of
+    digits required to be output in the mantissa. No more digits than
+    can be accurately represented by $op are ever generated. If $digits
+    is 0 then that accurate maximum number of digits are generated
+
    ####################
 
    ARITHMETIC FUNCTIONS
@@ -589,17 +626,20 @@ __END__
     of the string if $base is 0. This is so that numbers
     like `0.23' are not interpreted as octal.
 
-   $bytes_written = Rmpf_out_str($op, $base, $digits);
+   $bytes_written = Rmpf_out_str($op, $base, $digits  [, $suffix]);
     Print $op to STDOUT, as a string of digits.  Return the number of
     bytes written, or if an error occurred, return 0. The mantissa
     is prefixed with an `0.' and is in the given base $base, which 
-    may vary from 2 to 62.  An exponent then printed, separated
+    may vary from 2 to 36.  An exponent then printed, separated
     by an `e', or if $base is greater than 10 then by an `@'.  The
     exponent is always in decimal.  The decimal point follows the
     current locale, on systems providing `localeconv'. Up to 
     $digits will be printed from the mantissa, except that no
     more digits than are accurately representable by $op will be
     printed. $digits can be 0 to select that accurate maximum.
+    The optional fourth argument ($suffix) is a string (eg "\n") that
+    will be appended to the output. ($bytes_written does not include
+    the number of bytes in $suffix.)
 
    #######################
 
@@ -814,6 +854,23 @@ __END__
 
    ###############################
    ###############################
+
+=head1 BUGS
+
+   You can get segfaults if you pass the wrong type of
+   argument to the functions - so if you get a segfault, the
+   first thing to do is to check that the argument types 
+   you have supplied are appropriate.
+
+=head1 TERMS AND CONDITIONS
+
+   Use this module for whatever you like. It's free and comes
+   with no guarantees - except that the purchase price is
+   fully refundable if you're dissatisfied with it.
+
+=head1 AUTHOR
+
+  Copyright Sisyhpus <sisyphus at(@) cpan dot (.) org>
 
 
 =cut

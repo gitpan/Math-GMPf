@@ -4,6 +4,8 @@ use strict;
 
 print "1..46\n";
 
+print "# Using gmp version ", Math::GMPf::gmp_v(), "\n";
+
 my $have_mpz = 0;
 my $have_mpq = 0;
 
@@ -77,12 +79,12 @@ else {print "not ok 9\n"}
 
 Rmpf_set_str($p, $str, 10);
 
-if(Rmpf_get_str($p, 10, 0) eq '.21135@14') {print "ok 10\n"}
+if(Rmpf_get_str($p, 10, 0) eq '0.21135e14') {print "ok 10\n"}
 else {print "not ok 10\n"}
 
 if($have_mpz) {
   Rmpf_set_z($p, $z);
-  if(Rmpf_get_str($p, 36, 0) eq'.asdfgkjqqqqqqqqqqq@18') {print "ok 11\n"}
+  if(Rmpf_get_str($p, 36, 0) eq'0.asdfgkjqqqqqqqqqqq@18') {print "ok 11\n"}
   else {print "not ok 11\n"}
   }
 else {print "ok 11 - skipped - no Math::GMPz\n"}
@@ -91,7 +93,7 @@ Rmpf_set_d($p, $double);
 
 my $check = Rmpf_get_d($p);
 
-if($check == $double) {print "ok 12\n"}
+if(abs($check - $double) < 0.0001) {print "ok 12\n"}
 else {print "not ok 12\n"}
 
 Rmpf_set_ui($p, $ui);
