@@ -1,3 +1,11 @@
+0.24
+ - Add TRmpf_out_str and TRmpf_inp_str.
+ - Rmpf_out_str now also takes an optional prefix argument.
+ - Remove the tests in the Makefile.PL that test for the presence of
+   a suitable compiler and GMP library.
+ - Minor bugfix to Rmpf_out_str. (Zero was being returned as '0.' and
+   therefore boolean "true".)
+
 0.15
  - Fix bug in test suite. (Test 12 in test1.t improperly constructed.)
  - Rewrite new().

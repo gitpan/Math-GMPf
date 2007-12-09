@@ -2,7 +2,7 @@ use Math::GMPf qw(:mpf);
 use warnings;
 use strict;
 
-print "1..46\n";
+print "1..48\n";
 
 print "# Using gmp version ", Math::GMPf::gmp_v(), "\n";
 
@@ -290,16 +290,16 @@ eval {$str = Math::GMPf::gmp_v();};
 if($@ || $str =~ /[^0-9\.]/) {print "not ok 45\n"}
 else {print "ok 45\n"}
 
-my $ofh;
+my $ofh = select(STDERR);
+eval {Rmpf_printf("The version is %s. Values are %d %.2Ff %.3Ff\n", $str, 11, $w2, $w0);};
+select($ofh);
 
-eval {
-     $ofh = select(STDERR);
-     Rmpf_printf("The version is %s. Values are %d %.2Ff %.3Ff\n", $str, 11, $w2, $w0);
-     select($ofh);
-     };
-
-if($@) {
-  select($ofh);
-  print "not ok 46: $@\n";
-  }
+if($@) { print "not ok 46: $@\n"}
 else {print "ok 46\n"}
+
+if(Rmpf_get_str($q, 62, 0) eq '0.1z@2') {print "ok 47\n"}
+else {print "not ok 47\n"}
+
+eval {Rmpf_get_str($q, -37, 0);};
+if($@ =~ /is not in acceptable range/) {print "ok 48\n"}
+else {print "not ok 48\n"}

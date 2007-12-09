@@ -273,7 +273,8 @@ void Rmpf_deref2(mpf_t * p, SV * base, SV * n_digits) {
      Inline_Stack_Vars;
      char * out;
      mp_exp_t ptr, *expptr;
-     unsigned long b = SvUV(base), n_dig = SvUV(n_digits);
+     int b = (int)SvIV(base);
+     size_t n_dig = (size_t)SvUV(n_digits);
 
      expptr = &ptr;
 
@@ -281,7 +282,7 @@ void Rmpf_deref2(mpf_t * p, SV * base, SV * n_digits) {
         n_dig = (double)(mpf_get_prec(*p)) / log(b) * log(2);
         }
 
-     if(b < 2 || b > 36) croak("Second argument supplied to Rmpf_get_str() is not in acceptable range");
+     if((b < 2 && b > -2) || b > 62 || b < -36) croak("Second argument supplied to Rmpf_get_str() is not in acceptable range");
 
      New(2, out, n_dig + 5 , char);
      if(out == NULL) croak("Failed to allocate memory in Rmpf_get_str function");
@@ -361,24 +362,87 @@ void Rmpf_swap(mpf_t * p1, mpf_t * p2) {
      mpf_swap(*p1, *p2);
 }
 
-SV * _Rmpf_out_str(mpf_t * p, SV * base, SV * digits) {
-     unsigned long ret;
-     if(SvIV(base) < 2 || SvIV(base) > 36)
-       croak("2nd argument supplied to Rmpf_out_str is out of allowable range (must be between 2 and 36 inclusive)");
-     ret = mpf_out_str(NULL, SvIV(base), SvUV(digits), *p);
+SV * _TRmpf_out_str(FILE * stream, SV * base, SV * dig, mpf_t * p) {
+     size_t ret;
+     ret = mpf_out_str(stream, (int)SvIV(base), (size_t)SvUV(dig), *p);
+     fflush(stream);
+     return newSVuv(ret);
+}
+
+SV * _Rmpf_out_str(mpf_t * p, SV * base, SV * dig) {
+     size_t ret;
+     ret = mpf_out_str(NULL, (int)SvIV(base), (size_t)SvUV(dig), *p);
      fflush(stdout);
      return newSVuv(ret);
 }
 
-SV * _Rmpf_out_str2(mpf_t * p, SV * base, SV * dig, SV * suff) {
-     unsigned long ret;
-     if(SvIV(base) < 2 || SvIV(base) > 36)
-       croak("2nd argument supplied to Rmpf_out_str is out of allowable range (must be between 2 and 36 inclusive)");
-     ret = mpf_out_str(NULL, SvUV(base), SvUV(dig), *p);
+SV * _TRmpf_out_strS(FILE * stream, SV * base, SV * dig, mpf_t * p, SV * suff) {
+     size_t ret;
+     ret = mpf_out_str(stream, (int)SvIV(base), (size_t)SvUV(dig), *p);
+     fflush(stream);
+     fprintf(stream, "%s", SvPV_nolen(suff));
+     return newSVuv(ret);
+}
+
+SV * _TRmpf_out_strP(SV * pre, FILE * stream, SV * base, SV * dig, mpf_t * p) {
+     size_t ret;
+     fprintf(stream, "%s", SvPV_nolen(pre));
+     fflush(stream);
+     ret = mpf_out_str(stream, (int)SvIV(base), (size_t)SvUV(dig), *p);
+     fflush(stream);
+     return newSVuv(ret);
+}
+
+SV * _TRmpf_out_strPS(SV * pre, FILE * stream, SV * base, SV * dig, mpf_t * p, SV * suff) {
+     size_t ret;
+     fprintf(stream, "%s", SvPV_nolen(pre));
+     fflush(stream);
+     ret = mpf_out_str(stream, (int)SvIV(base), (size_t)SvUV(dig), *p);
+     fflush(stream);
+     fprintf(stream, "%s", SvPV_nolen(suff));
+     fflush(stream);
+     return newSVuv(ret);
+}
+
+SV * _Rmpf_out_strS(mpf_t * p, SV * base, SV * dig, SV * suff) {
+     size_t ret;
+     ret = mpf_out_str(NULL, (int)SvIV(base), (size_t)SvUV(dig), *p);
      printf("%s", SvPV_nolen(suff));
      fflush(stdout);
      return newSVuv(ret);
 }
+
+SV * _Rmpf_out_strP(SV * pre, mpf_t * p, SV * base, SV * dig) {
+     size_t ret;
+     printf("%s", SvPV_nolen(pre));
+     ret = mpf_out_str(NULL, (int)SvIV(base), (size_t)SvUV(dig), *p);
+     fflush(stdout);
+     return newSVuv(ret);
+}
+
+SV * _Rmpf_out_strPS(SV * pre, mpf_t * p, SV * base, SV * dig, SV * suff) {
+     size_t ret;
+     printf("%s", SvPV_nolen(pre));
+     ret = mpf_out_str(NULL, (int)SvIV(base), (size_t)SvUV(dig), *p);
+     printf("%s", SvPV_nolen(suff));
+     fflush(stdout);
+     return newSVuv(ret);
+}
+
+SV * TRmpf_inp_str(mpf_t * p, FILE * stream, SV * base) {
+     size_t ret;
+     ret = mpf_inp_str(*p, stream, (int)SvIV(base));
+     fflush(stream);
+     return newSVuv(ret);
+}
+
+SV * Rmpf_inp_str(mpf_t * p, SV * base) {
+     size_t ret;
+     ret = mpf_inp_str(*p, NULL, (int)SvIV(base));
+     fflush(stdin);
+     return newSVuv(ret);
+}
+
 
 SV * Rmpf_cmp(mpf_t * p1, mpf_t * p2) {
      return newSViv(mpf_cmp(*p1, *p2));
@@ -501,10 +565,6 @@ void Rmpf_reldiff(mpf_t * d, mpf_t * p, mpf_t * q){
 
 SV * Rmpf_sgn(mpf_t * p) {
      return newSViv(mpf_sgn(*p));
-}
-
-SV * Rmpf_inp_str(mpf_t * p, SV * base) {
-     return newSVuv(mpf_inp_str(*p, NULL, SvUV(base)));
 }
 
 void Rmpf_ceil(mpf_t * p, mpf_t * q) {
@@ -1695,29 +1755,47 @@ void wrap_gmp_printf(SV * a, SV * b) {
      if(sv_isobject(b)) { 
        if(strEQ(HvNAME(SvSTASH(SvRV(b))), "Math::GMPz") ||
           strEQ(HvNAME(SvSTASH(SvRV(b))), "Math::GMP") ||
-          strEQ(HvNAME(SvSTASH(SvRV(b))), "GMP::Mpz"))
+          strEQ(HvNAME(SvSTASH(SvRV(b))), "GMP::Mpz")) {
           gmp_printf(SvPV_nolen(a), *(INT2PTR(mpz_t *, SvIV(SvRV(b)))));
+          fflush(stdout);
+       }
        else {
          if(strEQ(HvNAME(SvSTASH(SvRV(b))), "Math::GMPq") ||
-            strEQ(HvNAME(SvSTASH(SvRV(b))), "GMP::Mpq"))
+            strEQ(HvNAME(SvSTASH(SvRV(b))), "GMP::Mpq")) {
             gmp_printf(SvPV_nolen(a), *(INT2PTR(mpq_t *, SvIV(SvRV(b)))));
+            fflush(stdout);
+         }
          else {
            if(strEQ(HvNAME(SvSTASH(SvRV(b))), "Math::GMPf") ||
-              strEQ(HvNAME(SvSTASH(SvRV(b))), "GMP::Mpf"))
+              strEQ(HvNAME(SvSTASH(SvRV(b))), "GMP::Mpf")) {
               gmp_printf(SvPV_nolen(a), *(INT2PTR(mpf_t *, SvIV(SvRV(b)))));
+              fflush(stdout);
+           }
               else croak("Unrecognised object supplied as argument to Rmpf_printf");
            }
          }
        } 
 
      else {
-       if(SvUOK(b)) gmp_printf(SvPV_nolen(a), SvUV(b));
+       if(SvUOK(b)) {
+         gmp_printf(SvPV_nolen(a), SvUV(b));
+         fflush(stdout);
+       }
        else {
-         if(SvIOK(b)) gmp_printf(SvPV_nolen(a), SvIV(b)); 
+         if(SvIOK(b)) {
+           gmp_printf(SvPV_nolen(a), SvIV(b)); 
+           fflush(stdout);
+         }
          else {
-           if(SvNOK(b)) gmp_printf(SvPV_nolen(a), SvNV(b)); 
+           if(SvNOK(b)) {
+             gmp_printf(SvPV_nolen(a), SvNV(b)); 
+             fflush(stdout);
+           }
            else {
-             if(SvPOK(b)) gmp_printf(SvPV_nolen(a), SvPV_nolen(b));
+             if(SvPOK(b)) {
+               gmp_printf(SvPV_nolen(a), SvPV_nolen(b));
+               fflush(stdout);
+             }
              else croak("Unrecognised type supplied as argument to Rmpf_printf");
              }
            } 
@@ -2120,17 +2198,75 @@ Rmpf_swap (p1, p2)
 	return; /* assume stack size is correct */
 
 SV *
-_Rmpf_out_str (p, base, digits)
-	mpf_t *	p
+_TRmpf_out_str (stream, base, dig, p)
+	FILE *	stream
 	SV *	base
-	SV *	digits
+	SV *	dig
+	mpf_t *	p
 
 SV *
-_Rmpf_out_str2 (p, base, dig, suff)
+_Rmpf_out_str (p, base, dig)
+	mpf_t *	p
+	SV *	base
+	SV *	dig
+
+SV *
+_TRmpf_out_strS (stream, base, dig, p, suff)
+	FILE *	stream
+	SV *	base
+	SV *	dig
+	mpf_t *	p
+	SV *	suff
+
+SV *
+_TRmpf_out_strP (pre, stream, base, dig, p)
+	SV *	pre
+	FILE *	stream
+	SV *	base
+	SV *	dig
+	mpf_t *	p
+
+SV *
+_TRmpf_out_strPS (pre, stream, base, dig, p, suff)
+	SV *	pre
+	FILE *	stream
+	SV *	base
+	SV *	dig
+	mpf_t *	p
+	SV *	suff
+
+SV *
+_Rmpf_out_strS (p, base, dig, suff)
 	mpf_t *	p
 	SV *	base
 	SV *	dig
 	SV *	suff
+
+SV *
+_Rmpf_out_strP (pre, p, base, dig)
+	SV *	pre
+	mpf_t *	p
+	SV *	base
+	SV *	dig
+
+SV *
+_Rmpf_out_strPS (pre, p, base, dig, suff)
+	SV *	pre
+	mpf_t *	p
+	SV *	base
+	SV *	dig
+	SV *	suff
+
+SV *
+TRmpf_inp_str (p, stream, base)
+	mpf_t *	p
+	FILE *	stream
+	SV *	base
+
+SV *
+Rmpf_inp_str (p, base)
+	mpf_t *	p
+	SV *	base
 
 SV *
 Rmpf_cmp (p1, p2)
@@ -2509,11 +2645,6 @@ Rmpf_reldiff (d, p, q)
 SV *
 Rmpf_sgn (p)
 	mpf_t *	p
-
-SV *
-Rmpf_inp_str (p, base)
-	mpf_t *	p
-	SV *	base
 
 void
 Rmpf_ceil (p, q)

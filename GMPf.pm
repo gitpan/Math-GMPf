@@ -40,14 +40,18 @@ Rmpf_get_default_prec Rmpf_get_prec Rmpf_get_si Rmpf_get_str Rmpf_get_ui
 Rmpf_init Rmpf_init2 Rmpf_init2_nobless Rmpf_init_nobless Rmpf_init_set 
 Rmpf_init_set_d Rmpf_init_set_d_nobless Rmpf_init_set_nobless Rmpf_init_set_si 
 Rmpf_init_set_si_nobless Rmpf_init_set_str Rmpf_init_set_str_nobless 
-Rmpf_init_set_ui Rmpf_init_set_ui_nobless Rmpf_inp_str Rmpf_integer_p Rmpf_mul 
-Rmpf_mul_2exp Rmpf_mul_ui Rmpf_neg Rmpf_out_str Rmpf_pow_ui Rmpf_printf 
+Rmpf_init_set_ui Rmpf_init_set_ui_nobless Rmpf_inp_str
+TRmpf_inp_str
+Rmpf_integer_p Rmpf_mul 
+Rmpf_mul_2exp Rmpf_mul_ui Rmpf_neg Rmpf_out_str 
+TRmpf_out_str
+Rmpf_pow_ui Rmpf_printf 
 Rmpf_random2 Rmpf_reldiff Rmpf_set Rmpf_set_d Rmpf_set_default_prec Rmpf_set_prec 
 Rmpf_set_prec_raw Rmpf_set_q Rmpf_set_si Rmpf_set_str Rmpf_set_ui Rmpf_set_z 
 Rmpf_sgn Rmpf_sqrt Rmpf_sqrt_ui Rmpf_sub Rmpf_sub_ui Rmpf_swap Rmpf_trunc 
 Rmpf_ui_div Rmpf_ui_sub Rmpf_urandomb
     );
-    $Math::GMPf::VERSION = '0.15';
+    $Math::GMPf::VERSION = '0.24';
 
     DynaLoader::bootstrap Math::GMPf $Math::GMPf::VERSION;
 
@@ -61,8 +65,12 @@ Rmpf_get_default_prec Rmpf_get_prec Rmpf_get_si Rmpf_get_str Rmpf_get_ui
 Rmpf_init Rmpf_init2 Rmpf_init2_nobless Rmpf_init_nobless Rmpf_init_set 
 Rmpf_init_set_d Rmpf_init_set_d_nobless Rmpf_init_set_nobless Rmpf_init_set_si 
 Rmpf_init_set_si_nobless Rmpf_init_set_str Rmpf_init_set_str_nobless 
-Rmpf_init_set_ui Rmpf_init_set_ui_nobless Rmpf_inp_str Rmpf_integer_p Rmpf_mul 
-Rmpf_mul_2exp Rmpf_mul_ui Rmpf_neg Rmpf_out_str Rmpf_pow_ui Rmpf_printf 
+Rmpf_init_set_ui Rmpf_init_set_ui_nobless Rmpf_inp_str 
+TRmpf_inp_str
+Rmpf_integer_p Rmpf_mul 
+Rmpf_mul_2exp Rmpf_mul_ui Rmpf_neg Rmpf_out_str 
+TRmpf_out_str
+Rmpf_pow_ui Rmpf_printf 
 Rmpf_random2 Rmpf_reldiff Rmpf_set Rmpf_set_d Rmpf_set_default_prec Rmpf_set_prec 
 Rmpf_set_prec_raw Rmpf_set_q Rmpf_set_si Rmpf_set_str Rmpf_set_ui Rmpf_set_z 
 Rmpf_sgn Rmpf_sqrt Rmpf_sqrt_ui Rmpf_sub Rmpf_sub_ui Rmpf_swap Rmpf_trunc 
@@ -104,7 +112,7 @@ sub new {
     # $_[0] is the value, $_[1] (if supplied) is the base of the number
     # in the string $[_0].
     $arg1 = shift;
-    $base = 0;
+    $base = 10;
 
     $type = _itsa($arg1);
     if(!$type) {die "Inappropriate argument supplied to new()"}
@@ -130,7 +138,7 @@ sub new {
     if($type == 4) { # POK
       if(@_ > 1) {die "Too many arguments supplied to new() - expected no more than two"}
       $base = shift if @_;
-      if($base < 0 || $base == 1 || $base > 36) {die "Invalid value for base"}
+      if(($base < 2 && $base > -2) || $base < -62 || $base > 62) {die "Invalid value for base"}
       return Rmpf_init_set_str($arg1, $base);
     }
 
@@ -140,10 +148,44 @@ sub new {
     }
 }
 
+#sub Rmpf_out_str {
+#    if(@_ == 3) { return _Rmpf_out_str($_[0], $_[1], $_[2]) }
+#    elsif(@_ == 4) { return _Rmpf_out_str2($_[0], $_[1], $_[2], $_[3]) }
+#    else {die "Wrong number of arguments supplied to Rmpf_out_str()"}
+#}
+
 sub Rmpf_out_str {
-    if(@_ == 3) { return _Rmpf_out_str($_[0], $_[1], $_[2]) }
-    elsif(@_ == 4) { return _Rmpf_out_str2($_[0], $_[1], $_[2], $_[3]) }
-    else {die "Wrong number of arguments supplied to Rmpf_out_str()"}
+    if(@_ == 3) {
+       die "Inappropriate 1st arg supplied to Rmpf_out_str" if _itsa($_[0]) != 6;
+       return _Rmpf_out_str($_[0], $_[1], $_[2]);
+    }
+    if(@_ == 4) {
+      if(_itsa($_[0]) == 6) {return _Rmpf_out_strS($_[0], $_[1], $_[2], $_[3])}
+      die "Incorrect args supplied to Rmpf_out_str" if _itsa($_[1]) != 6;
+      return _Rmpf_out_strP($_[0], $_[1], $_[2], $_[3]);
+    }
+    if(@_ == 5) {
+      die "Inappropriate 2nd arg supplied to Rmpf_out_str" if _itsa($_[1]) != 6;
+      return _Rmpf_out_strPS($_[0], $_[1], $_[2], $_[3], $_[4]);
+    }
+    die "Wrong number of arguments supplied to Rmpf_out_str()";
+}
+
+sub TRmpf_out_str {
+    if(@_ == 4) {
+      die "Inappropriate 4th arg supplied to TRmpf_out_str" if _itsa($_[3]) != 6;
+      return _TRmpf_out_str($_[0], $_[1], $_[2], $_[3]);
+    }
+    if(@_ == 5) {
+      if(_itsa($_[3]) == 6) {return _TRmpf_out_strS($_[0], $_[1], $_[2], $_[3], $_[4])}
+      die "Incorrect args supplied to TRmpf_out_str" if _itsa($_[4]) != 6;
+      return _TRmpf_out_strP($_[0], $_[1], $_[2], $_[3], $_[4]);
+    }
+    if(@_ == 6) {
+      die "Inappropriate 5th arg supplied to TRmpf_out_str" if _itsa($_[4]) != 6;
+      return _TRmpf_out_strPS($_[0], $_[1], $_[2], $_[3], $_[4], $_[5]);
+    }
+    die "Wrong number of arguments supplied to TRmpf_out_str()";
 }
 
 sub Rmpf_get_str {
@@ -151,7 +193,7 @@ sub Rmpf_get_str {
     my ($mantissa, $exponent) = Rmpf_deref2($_[0], $_[1], $_[2]);
 
     if($mantissa =~ /\-/ && $mantissa !~ /[^0,\-]/) {return '-0'}
-    if($mantissa !~ /[^0]/ ) {return '0'}
+    if($mantissa !~ /[^0]/ || $mantissa eq '' ) {return '0'}
 
     if(substr($mantissa, 0, 1) eq '-') {
        substr($mantissa, 0, 1, '');
@@ -227,6 +269,11 @@ __END__
 
    Math::GMPf - perl interface to the GMP library's floating point (mpf) functions.
 
+=head1 DEPENDENCIES
+
+   This module needs the GMP C library - available from:
+   http://swox.com/gmp
+
 =head1 DESCRIPTION
 
    A bigfloat module utilising the Gnu MP (GMP) library.
@@ -277,9 +324,9 @@ __END__
    print Rmpf_get_str($bn1, 10, 0);
 
    # print out the value held by $bn1 (in base 29)
-   # using the (alternative) Rmpf_out_str()
+   # using the (alternative) TRmpf_out_str()
    # function. (This function doesn't print a newline.)
-   Rmpf_out_str($bn1, 29, 0);
+   TRmpf_out_str(*STDOUT, 29, 0, $bn1);
 
 =head1 MEMORY MANAGEMENT
 
@@ -523,11 +570,11 @@ __END__
     accurately represented by $op are ever generated.  If $digits
     is 0 then that accurate maximum number of digits are generated.
 
-   ($man, $exp) = Rmpfr_deref2($op, $base, $digits);
+   ($man, $exp) = Rmpf_deref2($op, $base, $digits);
     Returns the mantissa to $man (as a string of digits, prefixed with
     a minus sign if $op is negative), and returns the exponent to $exp.
     There's an implicit decimal point to the left of the first digit in
-    $man. The third argument to Rmpfr_deref2() specifies the number of
+    $man. The third argument to Rmpf_deref2() specifies the number of
     digits required to be output in the mantissa. No more digits than
     can be accurately represented by $op are ever generated. If $digits
     is 0 then that accurate maximum number of digits are generated
@@ -605,12 +652,8 @@ __END__
    INPUT AND OUTPUT FUNCTIONS
    See http://swox.com/gmp/manual/I-O-of-Floats.html
 
-   The GMP library versions of these functions have
-   the capability to read/write directly from/to a 
-   file (as well as to stdout). As provided here,
-   the functions read/write from/to stdout only.
-
    $bytes_read = Rmpf_inp_str($rop, $base);
+    BEST TO USE TRmpf_inp_str INSTEAD.
     Read a string in base $base from STDIN, and put the read
     float in $rop. The string is of the form `M@N' or, if 
     $base is 10 or less, alternatively `MeN'.  `M' is the
@@ -619,27 +662,51 @@ __END__
     specified base or, if $base is negative,in decimal. The
     decimal point expected is taken from the current locale,
     on systems providing `localeconv'. The argument $base may
-    be in the ranges 2 to 62, or -62 to -2. Negative values
+    be in the ranges 2 to 36, or -36 to -2. Negative values
     are used to specify that the exponent is in decimal.
     Unlike the corresponding `Math::GMPz' function, the
     base will not be determined from the leading characters
     of the string if $base is 0. This is so that numbers
     like `0.23' are not interpreted as octal.
 
-   $bytes_written = Rmpf_out_str($op, $base, $digits  [, $suffix]);
-    Print $op to STDOUT, as a string of digits.  Return the number of
-    bytes written, or if an error occurred, return 0. The mantissa
-    is prefixed with an `0.' and is in the given base $base, which 
-    may vary from 2 to 36.  An exponent then printed, separated
-    by an `e', or if $base is greater than 10 then by an `@'.  The
-    exponent is always in decimal.  The decimal point follows the
-    current locale, on systems providing `localeconv'. Up to 
-    $digits will be printed from the mantissa, except that no
-    more digits than are accurately representable by $op will be
-    printed. $digits can be 0 to select that accurate maximum.
-    The optional fourth argument ($suffix) is a string (eg "\n") that
-    will be appended to the output. ($bytes_written does not include
-    the number of bytes in $suffix.)
+   $bytes_read = TRmpf_inp_str($rop, $stream, $base);
+    As for Rmpf_inp_str, except that there's the capability to read
+    from somewhere other than STDIN.
+    To read from STDIN:
+       TRmpf_inp_str($rop, *stdin, $base);
+    To read from an open filehandle (let's call it FH):
+       TRmpf_inp_str($rop, \*FH, $base);
+
+   $bytes_written = Rmpf_out_str([$prefix,] $op, $base, $digits  [, $suffix]);
+    BEST TO USE TRmpf_out_str INSTEAD.
+    Print $op to stream, as a string of digits. Return the number of
+    bytes written, or if an error occurred, return 0. The mantissa is
+    prefixed with an `0.' and is in the given base, which may vary 
+    from 2 to 62 or from -2 to -36. An exponent is then printed,
+    separated by an `e', or if the base is greater than 10 then by an
+    `@'. The exponent is always in decimal. The decimal point follows
+    the current locale, on systems providing localeconv. For bases in
+    the range 2..36, digits and lower-case letters are used; for
+    -2..-36, digits and upper-case letters are used; for 37..62, digits,
+    upper-case letters, and lower-case letters (in that significance
+    order) are used. Up to $digits will be printed from the mantissa,
+    except that no more digits than are accurately representable by $op 
+    will be printed. $digits can be 0 to select that accurate maximum. 
+    The optional last argument ($suffix) is a string (eg "\n") that
+    will be appended to the output. The optional first argument 
+    ($prefix) is a string that will be prepended to the output. Note
+    that either none, one, or both, of $prefix and $suffix may be
+    supplied. ($bytes_written does not include the number of bytes in
+    $suffix and $prefix.)
+
+   $bytes_written = TRmpf_out_str([$prefix,] $stream, $base, $digits, $op, [, $suffix]);
+    As for Rmpf_out_str, except that there's the capability to print
+    to somewhere other than STDOUT. Note that the order of the args
+    is different (to match the order of the mpf_out_str args).
+    To print to STDERR:
+       TRmpf_out_str(*stderr, $base, $digits, $op);
+    To print to an open filehandle (let's call it FH):
+       TRmpf_out_str(\*FH, $base, $digits, $op);
 
    #######################
 

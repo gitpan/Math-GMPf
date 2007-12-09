@@ -8,12 +8,19 @@ print "1..4\n";
 
 print "# Using gmp version ", Math::GMPf::gmp_v(), "\n";
 
+Rmpf_set_default_prec(64);
+
 my $ui = 123569;
 my $si = -19907;
 my $d = -1.625;
 my $str = '-119.125';
+my $str62 = 'zxfy@0';
+my $strn = '12@1';
 
 my $ok = '';
+
+my $f000 = Math::GMPf->new($str62, 62);
+if($f000 == 14767406) {$ok .= 'a'}
 
 my $f00 = new Math::GMPf();
 Rmpf_set_ui($f00, $ui);
@@ -37,7 +44,10 @@ if($f05 == $str) {$ok .= 'g'}
 my $f06 = new Math::GMPf($d);
 if($f06 == $d) {$ok .= 'h'}
 
-if($ok eq 'bcdefgh') {print "ok 1\n"}
+my $f07 = Math::GMPf->new($strn, -37);
+if($f07 == 1443 ){$ok .= 'i'}
+
+if($ok eq 'abcdefghi') {print "ok 1\n"}
 else {print "not ok 1 $ok\n"}
 
 #############################
