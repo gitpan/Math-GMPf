@@ -290,9 +290,9 @@ eval {$str = Math::GMPf::gmp_v();};
 if($@ || $str =~ /[^0-9\.]/) {print "not ok 45\n"}
 else {print "ok 45\n"}
 
-my $ofh = select(STDERR);
+#my $ofh = select(STDERR);
 eval {Rmpf_printf("The version is %s. Values are %d %.2Ff %.3Ff\n", $str, 11, $w2, $w0);};
-select($ofh);
+#select($ofh);
 
 if($@) { print "not ok 46: $@\n"}
 else {print "ok 46\n"}

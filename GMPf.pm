@@ -51,7 +51,7 @@ Rmpf_set_prec_raw Rmpf_set_q Rmpf_set_si Rmpf_set_str Rmpf_set_ui Rmpf_set_z
 Rmpf_sgn Rmpf_sqrt Rmpf_sqrt_ui Rmpf_sub Rmpf_sub_ui Rmpf_swap Rmpf_trunc 
 Rmpf_ui_div Rmpf_ui_sub Rmpf_urandomb
     );
-    $Math::GMPf::VERSION = '0.24';
+    $Math::GMPf::VERSION = '0.25';
 
     DynaLoader::bootstrap Math::GMPf $Math::GMPf::VERSION;
 
