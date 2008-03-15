@@ -86,8 +86,11 @@ if($have_mpz) {
   Rmpf_set_z($p, $z);
   if(Rmpf_get_str($p, 36, 0) eq'0.asdfgkjqqqqqqqqqqq@18') {print "ok 11\n"}
   else {print "not ok 11\n"}
-  }
-else {print "ok 11 - skipped - no Math::GMPz\n"}
+}
+else {
+  warn "Skipping test 11 - no Math::GMPz\n";
+  print "ok 11\n";
+}
 
 Rmpf_set_d($p, $double);
 
@@ -242,8 +245,12 @@ if($have_mpq) {
    Rmpf_set_q($q, $rat);
    if(Rmpf_integer_p($q)) {print "ok 41\n"}
    else {print "not ok 41\n"}
-   }
-else {print "ok 41 - skipped - no Math::GMPq\n"}
+}
+else {
+  Rmpf_set_d($q, 123);
+  warn "Skipping test 41 - no Math::GMPq\n";
+  print "ok 41\n";
+}
 
 if($have_mpz) {
   my $str = '';
@@ -269,7 +276,10 @@ if($have_mpz) {
 
   Math::GMPz::rand_clear($state);
 }
-else {print "ok 42 - skipped - no Math::GMPz\n"}
+else {
+  warn "Skipping test 42 - no Math::GMPz\n";
+  print "ok 42\n";
+}
 
 my $w0 = Rmpf_init_set_ui(12345670);
 my $w1 = Rmpf_init_set_si(-12345670);

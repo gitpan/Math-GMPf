@@ -35,7 +35,8 @@ Rmpf_abs Rmpf_add Rmpf_add_ui Rmpf_ceil Rmpf_clear Rmpf_clear_mpf Rmpf_clear_ptr
 Rmpf_cmp Rmpf_cmp_d Rmpf_cmp_si Rmpf_cmp_ui 
 Rmpf_deref2 Rmpf_div Rmpf_div_2exp Rmpf_div_ui
 Rmpf_eq Rmpf_fits_sint_p Rmpf_fits_slong_p Rmpf_fits_sshort_p Rmpf_fits_uint_p 
-Rmpf_fits_ulong_p Rmpf_fits_ushort_p Rmpf_floor Rmpf_get_d Rmpf_get_d_2exp 
+Rmpf_fits_ulong_p Rmpf_fits_ushort_p Rmpf_floor Rmpf_fprintf
+Rmpf_get_d Rmpf_get_d_2exp 
 Rmpf_get_default_prec Rmpf_get_prec Rmpf_get_si Rmpf_get_str Rmpf_get_ui 
 Rmpf_init Rmpf_init2 Rmpf_init2_nobless Rmpf_init_nobless Rmpf_init_set 
 Rmpf_init_set_d Rmpf_init_set_d_nobless Rmpf_init_set_nobless Rmpf_init_set_si 
@@ -48,10 +49,11 @@ TRmpf_out_str
 Rmpf_pow_ui Rmpf_printf 
 Rmpf_random2 Rmpf_reldiff Rmpf_set Rmpf_set_d Rmpf_set_default_prec Rmpf_set_prec 
 Rmpf_set_prec_raw Rmpf_set_q Rmpf_set_si Rmpf_set_str Rmpf_set_ui Rmpf_set_z 
-Rmpf_sgn Rmpf_sqrt Rmpf_sqrt_ui Rmpf_sub Rmpf_sub_ui Rmpf_swap Rmpf_trunc 
+Rmpf_sgn Rmpf_sprintf Rmpf_sprintf_ret 
+Rmpf_sqrt Rmpf_sqrt_ui Rmpf_sub Rmpf_sub_ui Rmpf_swap Rmpf_trunc 
 Rmpf_ui_div Rmpf_ui_sub Rmpf_urandomb
     );
-    $Math::GMPf::VERSION = '0.25';
+    $Math::GMPf::VERSION = '0.26';
 
     DynaLoader::bootstrap Math::GMPf $Math::GMPf::VERSION;
 
@@ -60,7 +62,8 @@ Rmpf_abs Rmpf_add Rmpf_add_ui Rmpf_ceil Rmpf_clear Rmpf_clear_mpf Rmpf_clear_ptr
 Rmpf_cmp Rmpf_cmp_d Rmpf_cmp_si Rmpf_cmp_ui 
 Rmpf_deref2 Rmpf_div Rmpf_div_2exp Rmpf_div_ui
 Rmpf_eq Rmpf_fits_sint_p Rmpf_fits_slong_p Rmpf_fits_sshort_p Rmpf_fits_uint_p 
-Rmpf_fits_ulong_p Rmpf_fits_ushort_p Rmpf_floor Rmpf_get_d Rmpf_get_d_2exp 
+Rmpf_fits_ulong_p Rmpf_fits_ushort_p Rmpf_floor Rmpf_fprintf
+Rmpf_get_d Rmpf_get_d_2exp 
 Rmpf_get_default_prec Rmpf_get_prec Rmpf_get_si Rmpf_get_str Rmpf_get_ui 
 Rmpf_init Rmpf_init2 Rmpf_init2_nobless Rmpf_init_nobless Rmpf_init_set 
 Rmpf_init_set_d Rmpf_init_set_d_nobless Rmpf_init_set_nobless Rmpf_init_set_si 
@@ -73,7 +76,8 @@ TRmpf_out_str
 Rmpf_pow_ui Rmpf_printf 
 Rmpf_random2 Rmpf_reldiff Rmpf_set Rmpf_set_d Rmpf_set_default_prec Rmpf_set_prec 
 Rmpf_set_prec_raw Rmpf_set_q Rmpf_set_si Rmpf_set_str Rmpf_set_ui Rmpf_set_z 
-Rmpf_sgn Rmpf_sqrt Rmpf_sqrt_ui Rmpf_sub Rmpf_sub_ui Rmpf_swap Rmpf_trunc 
+Rmpf_sgn Rmpf_sprintf Rmpf_sprintf_ret
+Rmpf_sqrt Rmpf_sqrt_ui Rmpf_sub Rmpf_sub_ui Rmpf_swap Rmpf_trunc 
 Rmpf_ui_div Rmpf_ui_sub Rmpf_urandomb
 )]);
 
@@ -261,6 +265,23 @@ sub Rmpf_printf {
       }
 }
 
+sub Rmpf_fprintf {
+    die "Rmpf_fprintf must take 3 arguments: filehandle, format string, and variable" if @_ != 3;
+    wrap_gmp_fprintf(@_);
+}
+
+sub Rmpf_sprintf {
+    die "Rmpf_sprintf must take 3 arguments: buffer, format string, and variable" if @_ != 3;
+    my $len = wrap_gmp_sprintf(@_);
+    $_[0] = substr($_[0], 0, $len);
+}
+
+sub Rmpf_sprintf_ret {
+    die "Rmpf_sprintf must take 3 arguments: buffer, format string, and variable" if @_ != 3;
+    my $len = wrap_gmp_sprintf(@_);
+    return substr($_[0], 0, $len);
+}
+
 1;
 
 __END__
@@ -441,7 +462,7 @@ __END__
 
    $bits = Rmpf_get_prec($op);
     Return the current precision of $op, in bits.
- 
+
    Rmpf_set_prec($rop, $bits);
     Set the precision of $rop to be *at least* $bits bits.
     The value in $rop will be truncated to the new precision.
@@ -548,7 +569,7 @@ __END__
 
    CONVERSION FUNCTIONS
    See http://swox.com/gmp/manual/Converting-Floats.html
- 
+
    $double = Rmpf_get_d($op);
     Convert $op to a 'double'.
 
@@ -592,7 +613,7 @@ __END__
    Rmpf_sub_ui($rop, $op, $ui);
    Rmpf_ui_sub($rop, $ui, $op);
     $rop = 2nd arg - 3rd arg.
- 
+
    Rmpf_mul($rop, $op1, $op2);
    Rmpf_mul_ui($rop, $op, $ui);
     $rop = 2nd arg * 3rd arg.
@@ -640,7 +661,7 @@ __END__
     are approximately equal.
     Caution: Currently only whole limbs are compared, and only in an
     exact fashion.
- 
+
    Rmpf_reldiff($rop, $op1, $op2);
     $rop = abs($op1 - $op2) / $op1.
 
@@ -712,7 +733,7 @@ __END__
 
    MISCELLANEOUS FUNCTIONS
    See http://swox.com/gmp/manual/Miscellaneous-Float_Functions.html
- 
+
    Rmpf_ceil($rop, $op); 
    Rmpf_floor($rop, $op); 
    Rmpf_trunc($rop, $op);
@@ -722,7 +743,7 @@ __END__
 
    $bool = Rmpf_integer_p($op);
     Return non-zero if $op is an integer.
- 
+
    $bool = Rmpf_fits_ulong_p($op); 
    $bool = Rmpf_fits_slong_p($op);
    $bool = Rmpf_fits_uint_p($op); 
@@ -764,7 +785,7 @@ __END__
     ####################
 
     OPERATOR OVERLOADING
-    
+
     Overloading works with numbers, strings (base 10 only)
     and Math::GMPf objects. Strings are coerced into
     Math::GMPf objects (with default precision).
@@ -919,6 +940,31 @@ __END__
     Also, in Rmpf_printf, there's no support for POSIX '$' style 
     numbered arguments.
 
+   Rmpf_fprintf($fh, $format_string, $var);
+
+    This function (unlike the GMP counterpart) is limited to taking
+    3 arguments - the filehandle, the format string, and the variable
+    to be formatted. That is, you can format only one variable at a time.
+    Other than that, the rules outlined above wrt Rmpf_printf apply.
+
+   Rmpf_sprintf($buffer, $format_string, $var);
+
+    This function (unlike the GMP counterpart) is limited to taking
+    3 arguments - the filehandle, the format string, and the variable
+    to be formatted. $buffer must be large enough to accommodate the
+    formatted string, and is truncated to the length of that formatted
+    string. If you prefer to have the resultant string returned (rather
+    than stored in $buffer), use Rmpz_sprintf_ret instead - which will
+    also leave the length of $buffer unaltered. See Rmpf_printf
+    documentation for further info.
+
+   $string = Rmpf_sprintf_ret($buffer, $format_string, $var);
+
+    As for Rmpf_sprintf, but returns the formatted string, rather than
+    storing it in $buffer. $buffer needs to be large enough to 
+    accommodate the formatted string. The length of $buffer (but not the
+    contents) will be unaltered.
+
    ###############################
    ###############################
 
@@ -929,15 +975,14 @@ __END__
    first thing to do is to check that the argument types 
    you have supplied are appropriate.
 
-=head1 TERMS AND CONDITIONS
+=head1 LICENSE
 
-   Use this module for whatever you like. It's free and comes
-   with no guarantees - except that the purchase price is
-   fully refundable if you're dissatisfied with it.
+    This perl code is free software; you may redistribute it
+    and/or modify it under the same terms as Perl itself.
 
 =head1 AUTHOR
 
-  Copyright Sisyhpus <sisyphus at(@) cpan dot (.) org>
+    Sisyphus <sisyphus at(@) cpan dot (.) org>
 
 
 =cut

@@ -48,7 +48,7 @@ my %options = (
   LIBS => [
     '-lgmp'
   ],
-  VERSION_FROM => 'GMPf.pm',
+  VERSION => q[0.26],
   clean   => { FILES => 'out1.txt out2.txt out3.txt out4.txt out5.txt out6.txt out7.txt' },
 );
 

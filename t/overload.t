@@ -528,7 +528,10 @@ if($] >= 5.008) {
   else {print "not ok 32\n"}
   }
 
-else {print "ok 32 - skipped - no overloading of 'int()' on perl $] \n"}
+else {
+  warn "Skipping test 32 - no overloading of 'int' on perl $] \n";
+  print "ok 32\n";
+}
 
 my $mbi = Math::BigInt->new(112345);
 $ok = '';

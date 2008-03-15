@@ -1,3 +1,7 @@
+0.26
+ - Add Rmpf_fprintf, Rmpf_sprintf and Rmpf_sprintf_ret
+ - Finally fix (hopefully) the bug in the test1.t test script (that was
+   supposed to be fixed by the release of 0.25).
 0.25
  - Fix bug in test1.t tests script that resulted in a reported
    'make test' failure on many platforms.
