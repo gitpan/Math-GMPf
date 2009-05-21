@@ -1,10 +1,21 @@
+0.27
+ - Remove (the need for) INLINE.h.
+ - Change Rmpf_sprintf to return the number of characters written.
+ - Add __GNU_MP_VERSION, __GNU_MP_VERSION_MINOR, __GNU_MP_VERSION_PATCHLEVEL,
+   __GMP_CC and __GMP_CFLAGS
+ - Fix overload_copy sub so that the copy preserves the precision of the original.
+ - Change Rmpf_printf() so that, like its fprintf and sprintf counterparts,
+   it formats only one variable at a time.
+
 0.26
  - Add Rmpf_fprintf, Rmpf_sprintf and Rmpf_sprintf_ret
  - Finally fix (hopefully) the bug in the test1.t test script (that was
    supposed to be fixed by the release of 0.25).
+
 0.25
  - Fix bug in test1.t tests script that resulted in a reported
    'make test' failure on many platforms.
+
 0.24
  - Add TRmpf_out_str and TRmpf_inp_str.
  - Rmpf_out_str now also takes an optional prefix argument.

@@ -18,7 +18,7 @@ my $ok = '';
 
 if($_64) {
   use integer;
-  my $int1 = Rmpf_init_set_str(2 ** 57 + 12345, 0);
+  my $int1 = Rmpf_init_set_str(2 ** 57 + 12345, 10);
   $int1 *= -1;
   if($int1 == -144115188075868217
      && $int1 == "-144115188075868217"
@@ -51,7 +51,7 @@ if($_64) {
   else {print "\$int1: $int1\n"}
 
   my $int2 = Rmpf_init();
-  Rmpf_set_str($int2, $int1, 0);
+  Rmpf_set_str($int2, $int1, 10);
   $int1 += 14;
   if($int2 - $int1 + 14 == 0
      && !($int2 - $int1 + 14)

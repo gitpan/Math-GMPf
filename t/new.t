@@ -8,6 +8,11 @@ print "1..4\n";
 
 print "# Using gmp version ", Math::GMPf::gmp_v(), "\n";
 
+my @version = split /\./, Math::GMPf::gmp_v();
+my $old = 0;
+if($version[0] == 4 && $version[1] < 2) {$old = 1}
+if($old) {warn "Test 1 should fail - GMP version ", Math::GMPf::gmp_v(), " is old and doesn't support base 62\n";}
+
 Rmpf_set_default_prec(64);
 
 my $ui = 123569;
@@ -156,6 +161,18 @@ if($@ =~ /Too many arguments supplied to new\(\) \- expected only one/) {$ok .= 
 eval{my $f37 = Math::GMPf::new($f27, 10);};
 if($@ =~ /Too many arguments supplied to new\(\) \- expected only one/) {$ok .= 'h'}
 
-if($ok eq 'abcdefgh') {print "ok 4\n"}
+eval{my $f38 = Math::GMPf::new('123.abc');};
+if($@ =~ /is not a valid base 10 number/) {$ok .= 'i'}
+
+eval{my $f39 = Math::GMPf->new('123.abc');};
+if($@ =~ /is not a valid base 10 number/) {$ok .= 'j'}
+
+eval{my $f40 = Math::GMPf::new('123.abc', 8);};
+if($@ =~ /is not a valid base 8 number/) {$ok .= 'k'}
+
+eval{my $f41 = Math::GMPf->new('123.abc', 8);};
+if($@ =~ /is not a valid base 8 number/) {$ok .= 'l'}
+
+if($ok eq 'abcdefghijkl') {print "ok 4\n"}
 else {print "not ok 4 $ok\n"}
 

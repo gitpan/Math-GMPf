@@ -3,7 +3,7 @@ use strict;
 use Math::GMPf qw(:mpf);
 use Math::BigInt; # for some error checks
 
-print "1..3\n";
+print "1..6\n";
 
 print "# Using gmp version ", Math::GMPf::gmp_v(), "\n";
 
@@ -143,4 +143,76 @@ if($ok eq 'abcdefg') {print "ok 3\n"}
 else {print "not ok 3 $ok\n"}
 
 $ok = '';
+
+$ret = Rmpf_printf("40%% of %Ff", $mpz);
+if($ret == 21) {$ok .= 'a'}
+
+my $w = 16;
+
+$ret = Rmpf_printf("40%% of %${w}Ff", $mpz);
+if($ret == 23) {$ok .= 'b'}
+
+$ret = Rmpf_printf("$string of %${w}Ff", $mpz);
+if($ret == 28) {$ok .= 'c'}
+
+$ret = Rmpf_printf("$ul of %${w}Ff", $mpz);
+if($ret == 25) {$ok .= 'd'}
+
+if($ok eq 'abcd') {print "\nok 4\n"}
+else {print "not ok 4 $ok\n"}
+
+eval{require Math::GMPq;};
+if(!$@) {
+  my $ok = '';
+  my $mpz = Math::GMPq->new(1234567);
+
+  my $ret = Rmpf_printf("40%% of %Qd", $mpz);
+  if($ret == 14) {$ok .= 'a'}
+
+  my $w = 10;
+
+  $ret = Rmpf_printf("40%% of %${w}Qd", $mpz);
+  if($ret == 17) {$ok .= 'b'}
+
+  $ret = Rmpf_printf("$string of %${w}Qd", $mpz);
+  if($ret == 22) {$ok .= 'c'}
+
+  $ret = Rmpf_printf("$ul of %${w}Qd", $mpz);
+  if($ret == 19) {$ok .= 'd'}
+
+  if($ok eq 'abcd') {print "\nok 5\n"}
+  else {print "not ok 5 $ok\n"}
+}
+else {
+  warn "Skipping test 5 - Math::GMPq not available\n";
+  print "ok 5\n";
+}
+
+eval{require Math::GMPz;};
+if(!$@) {
+  my $ok = '';
+  my $mpz = Math::GMPz->new(1234567);
+
+  my $ret = Rmpf_printf("40%% of %Zd", $mpz);
+  if($ret == 14) {$ok .= 'a'}
+
+  my $w = 10;
+
+  $ret = Rmpf_printf("40%% of %${w}Zd", $mpz);
+  if($ret == 17) {$ok .= 'b'}
+
+  $ret = Rmpf_printf("$string of %${w}Zd", $mpz);
+  if($ret == 22) {$ok .= 'c'}
+
+  $ret = Rmpf_printf("$ul of %${w}Zd", $mpz);
+  if($ret == 19) {$ok .= 'd'}
+
+  if($ok eq 'abcd') {print "\nok 6\n"}
+  else {print "not ok 6 $ok\n"}
+}
+else {
+  warn "Skipping test 6 - Math::GMPz not available\n";
+  print "ok 6\n";
+}
+
 

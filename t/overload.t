@@ -640,7 +640,7 @@ if($p < -0.00081 && $p > -0.000811
    && Math::GMPf::get_refcnt($q) == 1) {print "ok 38\n"}
 else {print "not ok 38\n"}
 
-Rmpf_set_str($p, "1234567.123", 0);
+Rmpf_set_str($p, "1234567.123", 10);
 
 if($p > $mbi &&
    $p >= $mbi &&
@@ -696,7 +696,22 @@ Rmpf_set_si($zero, -0.0);
 $ok .= 'c' if Math::GMPf::overload_string($zero) eq '0';
 $ok .= 'C' if $zero;
 
-if($ok eq 'abc') {print "ok 41\n"}
+# check overload_copy precision
+
+my $mpf1 = Rmpf_init2(101);
+Rmpf_set_d($mpf1, 0.7);
+
+my $mpf2 = $mpf1;
+$ok .= 'd' if Rmpf_get_prec($mpf2) == Rmpf_get_prec($mpf1) && $mpf2 == $mpf1;
+
+$mpf2 += 1;
+$ok .= 'e' if Rmpf_get_prec($mpf2) == Rmpf_get_prec($mpf1) && $mpf2 == $mpf1 + 1;
+
+my $mpf3 = $mpf1;
+$mpf1 += 1;
+$ok .= 'f' if Rmpf_get_prec($mpf3) == Rmpf_get_prec($mpf1) && $mpf3 == $mpf1 - 1;
+
+if($ok eq 'abcdef') {print "ok 41\n"}
 else {print "not ok 41 $ok\n"}
 
 

@@ -1,7 +1,7 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
-#include "INLINE.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <gmp.h>
@@ -34,16 +34,13 @@ SV * Rmpf_init_set_str_nobless(SV * str, SV * base) {
 
      New(1, mpf_t_obj, 1, mpf_t);
      if(mpf_t_obj == NULL) croak("Failed to allocate memory in Rmpf_init_set_str_nobless function");
+     if(mpf_init_set_str(*mpf_t_obj, SvPV_nolen(str), SvIV(base)))
+       croak("First arg to Rmpf_init_set_str_nobless() is not a valid base %d number", SvIV(base));
      obj_ref = newSV(0);
      obj = newSVrv(obj_ref, NULL);
      sv_setiv(obj, INT2PTR(IV,mpf_t_obj));
      SvREADONLY_on(obj);
-
-     if(mpf_init_set_str(*mpf_t_obj, SvPV_nolen(str), SvIV(base)))
-       croak("First arg to Rmpf_init_set_str_nobless() is not a valid base %d number", SvIV(base));
-
      return obj_ref;
-
 }
 
 SV * Rmpf_init2_nobless(SV * prec) {
@@ -68,14 +65,12 @@ SV * Rmpf_init_set_str(SV * str, SV * base) {
 
      New(1, mpf_t_obj, 1, mpf_t);
      if(mpf_t_obj == NULL) croak("Failed to allocate memory in Rmpf_init_set_str function");
+     if(mpf_init_set_str(*mpf_t_obj, SvPV_nolen(str), SvIV(base)))
+       croak("First arg to Rmpf_init_set_str() is not a valid base %d number", SvIV(base));
      obj_ref = newSV(0);
      obj = newSVrv(obj_ref, "Math::GMPf");
      sv_setiv(obj, INT2PTR(IV,mpf_t_obj));
      SvREADONLY_on(obj);
-
-     if(mpf_init_set_str(*mpf_t_obj, SvPV_nolen(str), SvIV(base)))
-       croak("First arg to Rmpf_init_set_str() is not a valid base %d number", SvIV(base));
-
      return obj_ref;
 }
 
@@ -270,13 +265,11 @@ SV * Rmpf_init_set_d_nobless(SV * a) {
 }
 
 void Rmpf_deref2(mpf_t * p, SV * base, SV * n_digits) {
-     Inline_Stack_Vars;
+     dXSARGS;
      char * out;
-     mp_exp_t ptr, *expptr;
+     mp_exp_t ptr;
      int b = (int)SvIV(base);
      size_t n_dig = (size_t)SvUV(n_digits);
-
-     expptr = &ptr;
 
      if(!n_dig) {
         n_dig = (double)(mpf_get_prec(*p)) / log(b) * log(2);
@@ -287,14 +280,14 @@ void Rmpf_deref2(mpf_t * p, SV * base, SV * n_digits) {
      New(2, out, n_dig + 5 , char);
      if(out == NULL) croak("Failed to allocate memory in Rmpf_get_str function");
 
-     mpf_get_str(out, expptr, b, SvUV(n_digits), *p);
+     mpf_get_str(out, &ptr, b, SvUV(n_digits), *p);
 
-     Inline_Stack_Reset;
-     Inline_Stack_Push(sv_2mortal(newSVpv(out, 0)));
+     // sp = mark; // not needed
+     ST(0) = sv_2mortal(newSVpv(out, 0));
      Safefree(out);
-     Inline_Stack_Push(sv_2mortal(newSViv(ptr)));
-     Inline_Stack_Done;
-     Inline_Stack_Return(2);
+     ST(1) = sv_2mortal(newSViv(ptr));
+     // PUTBACK; // not needed
+     XSRETURN(2);
 }
 
 void DESTROY(mpf_t * p) {
@@ -432,14 +425,14 @@ SV * _Rmpf_out_strPS(SV * pre, mpf_t * p, SV * base, SV * dig, SV * suff) {
 SV * TRmpf_inp_str(mpf_t * p, FILE * stream, SV * base) {
      size_t ret;
      ret = mpf_inp_str(*p, stream, (int)SvIV(base));
-     fflush(stream);
+     /* fflush(stream); */
      return newSVuv(ret);
 }
 
 SV * Rmpf_inp_str(mpf_t * p, SV * base) {
      size_t ret;
      ret = mpf_inp_str(*p, NULL, (int)SvIV(base));
-     fflush(stdin);
+     /* fflush(stdin); */
      return newSVuv(ret);
 }
 
@@ -473,18 +466,19 @@ SV * Rmpf_get_ui(mpf_t * p) {
 }
 
 void Rmpf_get_d_2exp(mpf_t * n) {
-     Inline_Stack_Vars;
+     dXSARGS;
      double d;
      unsigned long exp, *expptr;
 
      expptr = &exp;
      d = mpf_get_d_2exp(expptr, *n);
  
-     Inline_Stack_Reset;
-     Inline_Stack_Push(sv_2mortal(newSVnv(d)));
-     Inline_Stack_Push(sv_2mortal(newSVuv(exp)));
-     Inline_Stack_Done;
-     Inline_Stack_Return(2);
+     // sp = mark; // not needed
+     EXTEND(SP, 2);
+     ST(0) = sv_2mortal(newSVnv(d));
+     ST(1) = sv_2mortal(newSVuv(exp));
+     // PUTBACK; // not needed
+     XSRETURN(2);
 }
 
 void Rmpf_add(mpf_t * dest, mpf_t * src1, mpf_t * src2) {
@@ -882,7 +876,7 @@ SV * overload_copy(mpf_t * p, SV * second, SV * third) {
      obj_ref = newSV(0);
      obj = newSVrv(obj_ref, "Math::GMPf");
 
-     mpf_init(*mpf_t_obj);
+     mpf_init2(*mpf_t_obj, mpf_get_prec(*p));
      mpf_set(*mpf_t_obj, *p);
      sv_setiv(obj, INT2PTR(IV, mpf_t_obj));
      SvREADONLY_on(obj);
@@ -1430,35 +1424,35 @@ SV * overload_int(mpf_t * p, SV * second, SV * third) {
 /* Finish typemapping */
 
 void Rmpf_urandomb(SV * p, ...) {
-     Inline_Stack_Vars;
+     dXSARGS;
      unsigned long q, i, thingies;
 
-     thingies = Inline_Stack_Items;
-     q = SvUV(Inline_Stack_Item(thingies - 1)); 
+     thingies = items;
+     q = SvUV(ST(thingies - 1)); 
 
      if((q + 3) != thingies) croak ("Wrong args supplied to mpf_urandomb function");
 
      for(i = 0; i < q; ++i) {
-        mpf_urandomb(*(INT2PTR(mpf_t *, SvIV(SvRV(Inline_Stack_Item(i))))), *(INT2PTR(gmp_randstate_t *, SvIV(SvRV(Inline_Stack_Item(thingies - 3))))), SvUV(Inline_Stack_Item(thingies - 2)));
+        mpf_urandomb(*(INT2PTR(mpf_t *, SvIV(SvRV(ST(i))))), *(INT2PTR(gmp_randstate_t *, SvIV(SvRV(ST(thingies - 3))))), SvUV(ST(thingies - 2)));
         }
 
-     Inline_Stack_Void;
+     XSRETURN(0);
 }
 
 void Rmpf_random2(SV * x, ...){
-     Inline_Stack_Vars;
+     dXSARGS;
      unsigned long q, i, thingies;
 
-     thingies = Inline_Stack_Items;
-     q = SvUV(Inline_Stack_Item(thingies - 1)); 
+     thingies = items;
+     q = SvUV(ST(thingies - 1)); 
 
      if((q + 3) != thingies) croak ("Wrong args supplied to mpf_random2 function"); 
 
      for(i = 0; i < q; ++i) {
-        mpf_random2(*(INT2PTR(mpf_t *, SvIV(SvRV(Inline_Stack_Item(i))))), SvIV(Inline_Stack_Item(thingies - 3)), SvUV(Inline_Stack_Item(thingies - 2)));
+        mpf_random2(*(INT2PTR(mpf_t *, SvIV(SvRV(ST(i))))), SvIV(ST(thingies - 3)), SvUV(ST(thingies - 2)));
         }
 
-     Inline_Stack_Void;
+     XSRETURN(0);
 }
 
 SV * get_refcnt(SV * s) {
@@ -1939,6 +1933,29 @@ return 0;
 #endif
 #endif
 }
+
+SV * ___GNU_MP_VERSION() {
+     return newSVuv(__GNU_MP_VERSION);
+}
+
+SV * ___GNU_MP_VERSION_MINOR() {
+     return newSVuv(__GNU_MP_VERSION_MINOR);
+}
+
+SV * ___GNU_MP_VERSION_PATCHLEVEL() {
+     return newSVuv(__GNU_MP_VERSION_PATCHLEVEL);
+}
+
+SV * ___GMP_CC() {
+     char * ret = __GMP_CC;
+     return newSVpv(ret, 0);
+}
+
+SV * ___GMP_CFLAGS() {
+     char * ret = __GMP_CFLAGS;
+     return newSVpv(ret, 0);
+}
+
 MODULE = Math::GMPf	PACKAGE = Math::GMPf	
 
 PROTOTYPES: DISABLE
@@ -3021,4 +3038,19 @@ _has_longdouble ()
 
 int
 _has_inttypes ()
+
+SV *
+___GNU_MP_VERSION ()
+
+SV *
+___GNU_MP_VERSION_MINOR ()
+
+SV *
+___GNU_MP_VERSION_PATCHLEVEL ()
+
+SV *
+___GMP_CC ()
+
+SV *
+___GMP_CFLAGS ()
 

@@ -6,6 +6,11 @@ print "1..48\n";
 
 print "# Using gmp version ", Math::GMPf::gmp_v(), "\n";
 
+my @version = split /\./, Math::GMPf::gmp_v();
+my $old = 0;
+if($version[0] == 4 && $version[1] < 2) {$old = 1}
+if($old) {warn "Test 47 should fail - GMP version ", Math::GMPf::gmp_v(), " is old and doesn't support base 62\n";}
+
 my $have_mpz = 0;
 my $have_mpq = 0;
 
@@ -304,7 +309,7 @@ else {print "ok 45\n"}
 eval {Rmpf_printf("The version is %s. Values are %d %.2Ff %.3Ff\n", $str, 11, $w2, $w0);};
 #select($ofh);
 
-if($@) { print "not ok 46: $@\n"}
+if(!$@) { print "not ok 46\n"}
 else {print "ok 46\n"}
 
 if(Rmpf_get_str($q, 62, 0) eq '0.1z@2') {print "ok 47\n"}

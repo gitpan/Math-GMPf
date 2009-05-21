@@ -3,7 +3,6 @@ CHANGES
 Makefile.PL
 GMPf.pm
 GMPf.xs
-INLINE.h
 README
 t/aa_basic.t
 t/test1.t
