@@ -282,11 +282,11 @@ void Rmpf_deref2(mpf_t * p, SV * base, SV * n_digits) {
 
      mpf_get_str(out, &ptr, b, SvUV(n_digits), *p);
 
-     // sp = mark; // not needed
+     /* sp = mark; */ /* not needed */
      ST(0) = sv_2mortal(newSVpv(out, 0));
      Safefree(out);
      ST(1) = sv_2mortal(newSViv(ptr));
-     // PUTBACK; // not needed
+     /* PUTBACK; */ /* not needed */
      XSRETURN(2);
 }
 
@@ -468,16 +468,15 @@ SV * Rmpf_get_ui(mpf_t * p) {
 void Rmpf_get_d_2exp(mpf_t * n) {
      dXSARGS;
      double d;
-     unsigned long exp, *expptr;
+     long exp;
 
-     expptr = &exp;
-     d = mpf_get_d_2exp(expptr, *n);
+     d = mpf_get_d_2exp(&exp, *n);
  
-     // sp = mark; // not needed
+     /* sp = mark; */ /* not needed */
      EXTEND(SP, 2);
      ST(0) = sv_2mortal(newSVnv(d));
-     ST(1) = sv_2mortal(newSVuv(exp));
-     // PUTBACK; // not needed
+     ST(1) = sv_2mortal(newSViv(exp));
+     /* PUTBACK; */ /* not needed */
      XSRETURN(2);
 }
 
@@ -1947,13 +1946,21 @@ SV * ___GNU_MP_VERSION_PATCHLEVEL() {
 }
 
 SV * ___GMP_CC() {
+#ifdef __GMP_CC
      char * ret = __GMP_CC;
      return newSVpv(ret, 0);
+#else
+     return &PL_sv_undef
+#endif
 }
 
 SV * ___GMP_CFLAGS() {
+#ifdef __GMP_CFLAGS
      char * ret = __GMP_CFLAGS;
      return newSVpv(ret, 0);
+#else
+     return &PL_sv_undef
+#endif
 }
 
 MODULE = Math::GMPf	PACKAGE = Math::GMPf	

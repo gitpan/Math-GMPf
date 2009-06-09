@@ -68,7 +68,7 @@ Rmpf_sgn Rmpf_sprintf Rmpf_sprintf_ret
 Rmpf_sqrt Rmpf_sqrt_ui Rmpf_sub Rmpf_sub_ui Rmpf_swap Rmpf_trunc 
 Rmpf_ui_div Rmpf_ui_sub Rmpf_urandomb
     );
-    $Math::GMPf::VERSION = '0.27';
+    $Math::GMPf::VERSION = '0.28';
 
     DynaLoader::bootstrap Math::GMPf $Math::GMPf::VERSION;
 
@@ -835,8 +835,12 @@ __END__
 
    $GMP_cc = Math::GMPf::__GMP_CC;
    $GMP_cflags = Math::GMPf::__GMP_CFLAGS;
-    Returns respectively the CC and CFLAGS settings that were used
-    to compile the gmp library. (Not exportable.) 
+    These functions are not exportable.
+    If Math::GMPf has been built against gmp-4.2.3 or later,
+    returns respectively the CC and CFLAGS settings that were used
+    to compile the gmp library.
+    Returns undef if Math::GMPf has been built against an earlier
+    version of the gmp library.
 
    $major = Math::GMPf::__GNU_MP_VERSION;
    $minor = Math::GMPf::__GNU_MP_VERSION_MINOR;

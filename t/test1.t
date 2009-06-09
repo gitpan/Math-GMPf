@@ -2,7 +2,7 @@ use Math::GMPf qw(:mpf);
 use warnings;
 use strict;
 
-print "1..48\n";
+print "1..49\n";
 
 print "# Using gmp version ", Math::GMPf::gmp_v(), "\n";
 
@@ -318,3 +318,7 @@ else {print "not ok 47\n"}
 eval {Rmpf_get_str($q, -37, 0);};
 if($@ =~ /is not in acceptable range/) {print "ok 48\n"}
 else {print "not ok 48\n"}
+
+@vals = Rmpf_get_d_2exp(Math::GMPf->new(0.125));
+if($vals[0] == 0.5 && $vals[1] == -2) {print "ok 49\n"}
+else {print "not ok 49 @vals\n"}
