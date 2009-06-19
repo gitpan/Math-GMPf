@@ -68,7 +68,7 @@ Rmpf_sgn Rmpf_sprintf Rmpf_sprintf_ret
 Rmpf_sqrt Rmpf_sqrt_ui Rmpf_sub Rmpf_sub_ui Rmpf_swap Rmpf_trunc 
 Rmpf_ui_div Rmpf_ui_sub Rmpf_urandomb
     );
-    $Math::GMPf::VERSION = '0.28';
+    $Math::GMPf::VERSION = '0.29';
 
     DynaLoader::bootstrap Math::GMPf $Math::GMPf::VERSION;
 
@@ -247,24 +247,28 @@ sub _rewrite {
 
 sub Rmpf_printf {
     local $| = 1;
-    die "Rmpf_printf must take 2 arguments: format string, and variable" if @_ != 2;
+    push @_, 0 if @_ == 1; # add a dummy second argument
+    die "Rmpf_printf must pass 2 arguments: format string, and variable" if @_ != 2;
     wrap_gmp_printf(@_);
 }
 
 sub Rmpf_fprintf {
-    die "Rmpf_fprintf must take 3 arguments: filehandle, format string, and variable" if @_ != 3;
+    push @_, 0 if @_ == 2; # add a dummy third argument
+    die "Rmpf_fprintf must pass 3 arguments: filehandle, format string, and variable" if @_ != 3;
     wrap_gmp_fprintf(@_);
 }
 
 sub Rmpf_sprintf {
-    die "Rmpf_sprintf must take 3 arguments: buffer, format string, and variable" if @_ != 3;
+    push @_, 0 if @_ == 2; # add a dummy third argument
+    die "Rmpf_sprintf must pass 3 arguments: buffer, format string, and variable" if @_ != 3;
     my $len = wrap_gmp_sprintf(@_);
     $_[0] = substr($_[0], 0, $len);
     return $len;
 }
 
 sub Rmpf_sprintf_ret {
-    die "Rmpf_sprintf must take 3 arguments: buffer, format string, and variable" if @_ != 3;
+    push @_, 0 if @_ == 2; # add a dummy third argument
+    die "Rmpf_sprintf must pass 3 arguments: buffer, format string, and variable" if @_ != 3;
     my $len = wrap_gmp_sprintf(@_);
     return substr($_[0], 0, $len);
 }
@@ -870,6 +874,10 @@ __END__
     Now (unlike the GMP counterpart), it is limited to taking 2
     arguments - the format string, and the variable to be formatted.
     That is, you can format only one variable at a time.
+    If there is no variable to be formatted, then the final arg
+    can be omitted - a suitable dummy arg will be passed to the XS
+    code for you. ie the following will work:
+     Rmpf_printf("hello world\n");
     Returns the number of characters written, or -1 if an error
     occurred.
 
@@ -878,6 +886,10 @@ __END__
     This function (unlike the GMP counterpart) is limited to taking
     3 arguments - the filehandle, the format string, and the variable
     to be formatted. That is, you can format only one variable at a time.
+    If there is no variable to be formatted, then the final arg
+    can be omitted - a suitable dummy arg will be passed to the XS
+    code for you. ie the following will work:
+     Rmpf_fprintf($fh, "hello world\n");
     Other than that, the rules outlined above wrt Rmpf_printf apply.
     Returns the number of characters written, or -1 if an error
     occurred.
@@ -886,9 +898,13 @@ __END__
 
     This function (unlike the GMP counterpart) is limited to taking
     3 arguments - the buffer, the format string, and the variable
-    to be formatted. $buffer must be large enough to accommodate the
-    formatted string, and is truncated to the length of that formatted
-    string. If you prefer to have the resultant string returned (rather
+    to be formatted. If there is no variable to be formatted, then the
+    final arg can be omitted - a suitable dummy arg will be passed to
+    the XS code for you. ie the following will work:
+     Rmpf_sprintf($buffer, "hello world\n");
+    $buffer must be large enough to accommodate the formatted string,
+    and is truncated to the length of that formatted string.
+    If you prefer to have the resultant string returned (rather
     than stored in $buffer), use Rmpz_sprintf_ret instead - which will
     also leave the length of $buffer unaltered.
     Returns the number of characters written, or -1 if an error

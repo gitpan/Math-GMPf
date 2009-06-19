@@ -1950,7 +1950,7 @@ SV * ___GMP_CC() {
      char * ret = __GMP_CC;
      return newSVpv(ret, 0);
 #else
-     return &PL_sv_undef
+     return &PL_sv_undef;
 #endif
 }
 
@@ -1959,7 +1959,7 @@ SV * ___GMP_CFLAGS() {
      char * ret = __GMP_CFLAGS;
      return newSVpv(ret, 0);
 #else
-     return &PL_sv_undef
+     return &PL_sv_undef;
 #endif
 }
 
