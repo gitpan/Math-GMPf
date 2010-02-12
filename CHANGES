@@ -1,3 +1,8 @@
+0.30
+ - Add Rmpf_snprintf and Rmpf_snprintf_ret.
+ - Fix test 18 in test1.t. (It *was* checking the first 96 bits of two
+   64-bit numbers for equality ... which seems a bit dubious, and not
+   always be guaranteed to succeed.)
 0.29
  - 2 missing ';' in the XS file (subs ___GMP_CC and ___GMP_CFLAGS) meant
    that version 0.28 wouldn't build with some compilers. Now fixed.

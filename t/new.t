@@ -139,39 +139,51 @@ $ok = '';
 
 eval{my $f30 = Math::GMPf->new(17, 12);};
 if($@ =~ /Too many arguments supplied to new\(\) \- expected only one/) {$ok = 'a'}
+else {warn "4a: $@\n"}
 
 eval{my $f31 = Math::GMPf::new(17, 12);};
 if($@ =~ /Too many arguments supplied to new\(\) \- expected only one/) {$ok .= 'b'}
+else {warn "4b: $@\n"}
 
 eval{my $f32 = Math::GMPf->new($str, 12, 7);};
 if($@ =~ /Too many arguments supplied to new\(\)/) {$ok .= 'c'}
+else {warn "4c: $@\n"}
 
 eval{my $f33 = Math::GMPf::new($str, 12, 7);};
 if($@ =~ /Too many arguments supplied to new\(\) \- expected no more than two/) {$ok .= 'd'}
+else {warn "4d: $@\n"}
 
 eval{my $f34 = Math::GMPf->new($bi);};
 if($@ =~ /Inappropriate argument/) {$ok .= 'e'}
+else {warn "4e: $@\n"}
 
 eval{my $f35 = Math::GMPf::new($bi);};
 if($@ =~ /Inappropriate argument/) {$ok .= 'f'}
+else {warn "4f: $@\n"}
 
 eval{my $f36 = Math::GMPf->new($f27, 10);};
 if($@ =~ /Too many arguments supplied to new\(\) \- expected only one/) {$ok .= 'g'}
+else {warn "4g: $@\n"}
 
 eval{my $f37 = Math::GMPf::new($f27, 10);};
 if($@ =~ /Too many arguments supplied to new\(\) \- expected only one/) {$ok .= 'h'}
+else {warn "4h: $@\n"}
 
 eval{my $f38 = Math::GMPf::new('123.abc');};
 if($@ =~ /is not a valid base 10 number/) {$ok .= 'i'}
+else {warn "4i: $@\n"}
 
 eval{my $f39 = Math::GMPf->new('123.abc');};
 if($@ =~ /is not a valid base 10 number/) {$ok .= 'j'}
+else {warn "4j: $@\n"}
 
 eval{my $f40 = Math::GMPf::new('123.abc', 8);};
 if($@ =~ /is not a valid base 8 number/) {$ok .= 'k'}
+else {warn "4k: $@\n"}
 
 eval{my $f41 = Math::GMPf->new('123.abc', 8);};
 if($@ =~ /is not a valid base 8 number/) {$ok .= 'l'}
+else {warn "4l: $@\n"}
 
 if($ok eq 'abcdefghijkl') {print "ok 4\n"}
 else {print "not ok 4 $ok\n"}

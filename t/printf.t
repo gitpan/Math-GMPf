@@ -3,7 +3,7 @@ use strict;
 use Math::GMPf qw(:mpf);
 use Math::BigInt; # for some error checks
 
-print "1..6\n";
+print "1..7\n";
 
 print "# Using gmp version ", Math::GMPf::gmp_v(), "\n";
 
@@ -218,5 +218,31 @@ else {
   warn "Skipping test 6 - Math::GMPz not available\n";
   print "ok 6\n";
 }
+
+$ok = '';
+
+$mp *= -1;
+
+$buf = 'X' x 10;
+$ret = Rmpf_snprintf_ret($buf, 5, "%.0Ff", $mp);
+
+if($ret eq '-123') {$ok .= 'a'}
+else {warn "7a: $ret\n"}
+
+$ret = Rmpf_snprintf($buf, 6, "%.0Ff", $mp);
+
+if($ret == 8) {$ok .= 'b'}
+else {warn "7b: $ret\n"}
+
+if($buf eq '-1234') {$ok .= 'c'}
+else {warn "7c: $buf\n"}
+
+if($ok eq 'abc') {print "ok 7\n"}
+else {print "not ok 7\n"}
+
+
+
+
+  
 
 

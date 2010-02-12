@@ -64,11 +64,11 @@ TRmpf_out_str
 Rmpf_pow_ui Rmpf_printf 
 Rmpf_random2 Rmpf_reldiff Rmpf_set Rmpf_set_d Rmpf_set_default_prec Rmpf_set_prec 
 Rmpf_set_prec_raw Rmpf_set_q Rmpf_set_si Rmpf_set_str Rmpf_set_ui Rmpf_set_z 
-Rmpf_sgn Rmpf_sprintf Rmpf_sprintf_ret 
+Rmpf_sgn Rmpf_sprintf Rmpf_sprintf_ret  Rmpf_snprintf Rmpf_snprintf_ret
 Rmpf_sqrt Rmpf_sqrt_ui Rmpf_sub Rmpf_sub_ui Rmpf_swap Rmpf_trunc 
 Rmpf_ui_div Rmpf_ui_sub Rmpf_urandomb
     );
-    $Math::GMPf::VERSION = '0.29';
+    $Math::GMPf::VERSION = '0.30';
 
     DynaLoader::bootstrap Math::GMPf $Math::GMPf::VERSION;
 
@@ -91,7 +91,7 @@ TRmpf_out_str
 Rmpf_pow_ui Rmpf_printf 
 Rmpf_random2 Rmpf_reldiff Rmpf_set Rmpf_set_d Rmpf_set_default_prec Rmpf_set_prec 
 Rmpf_set_prec_raw Rmpf_set_q Rmpf_set_si Rmpf_set_str Rmpf_set_ui Rmpf_set_z 
-Rmpf_sgn Rmpf_sprintf Rmpf_sprintf_ret
+Rmpf_sgn Rmpf_sprintf Rmpf_sprintf_ret Rmpf_snprintf Rmpf_snprintf_ret
 Rmpf_sqrt Rmpf_sqrt_ui Rmpf_sub Rmpf_sub_ui Rmpf_swap Rmpf_trunc 
 Rmpf_ui_div Rmpf_ui_sub Rmpf_urandomb
 )]);
@@ -268,9 +268,24 @@ sub Rmpf_sprintf {
 
 sub Rmpf_sprintf_ret {
     push @_, 0 if @_ == 2; # add a dummy third argument
-    die "Rmpf_sprintf must pass 3 arguments: buffer, format string, and variable" if @_ != 3;
+    die "Rmpf_sprintf_ret must pass 3 arguments: buffer, format string, and variable" if @_ != 3;
     my $len = wrap_gmp_sprintf(@_);
     return substr($_[0], 0, $len);
+}
+
+sub Rmpf_snprintf {
+    push @_, 0 if @_ == 3; # add a dummy third argument
+    die "Rmpf_snprintf must pass 4 arguments: buffer, bytes written, format string, and variable" if @_ != 4;
+    my $len = wrap_gmp_snprintf(@_);
+    $_[0] = substr($_[0], 0, $_[1] - 1);
+    return $len;
+}
+
+sub Rmpf_snprintf_ret {
+    push @_, 0 if @_ == 3; # add a dummy third argument
+    die "Rmpf_snprintf_ret must pass 4 arguments: buffer, bytes written, format string, and variable" if @_ != 4;
+    my $len = wrap_gmp_snprintf(@_);
+    return substr($_[0], 0, $_[1] - 1);
 }
 
 sub __GNU_MP_VERSION {return ___GNU_MP_VERSION()}
@@ -905,7 +920,7 @@ __END__
     $buffer must be large enough to accommodate the formatted string,
     and is truncated to the length of that formatted string.
     If you prefer to have the resultant string returned (rather
-    than stored in $buffer), use Rmpz_sprintf_ret instead - which will
+    than stored in $buffer), use Rmpf_sprintf_ret instead - which will
     also leave the length of $buffer unaltered.
     Returns the number of characters written, or -1 if an error
     occurred.
@@ -916,6 +931,36 @@ __END__
     storing it in $buffer. $buffer needs to be large enough to 
     accommodate the formatted string. The length of $buffer will be
     unaltered.
+
+   $si = Rmpf_snprintf($buffer, $bytes, $format_string, $var);
+
+    Form a null-terminated string in $buffer. No more than $bytes 
+    bytes will be written. To get the full output, $bytes must be
+    enough for the string and null-terminator. $buffer must be large
+    enough to accommodate the string and null-terminator, and is
+    truncated to the length of that string (and null-terminator).
+    The return value is the total number of characters which ought
+    to have been produced, excluding the terminating null.
+    If $si >= $bytes then the actual output has been truncated to
+    the first $bytes-1 characters, and a null appended.
+    This function (unlike the GMP counterpart) is limited to taking
+    4 arguments - the buffer, the maximum number of bytes to be
+    returned, the format string, and the variable to be formatted.
+    If there is no variable to be formatted, then the final arg can
+    be omitted - a suitable dummy arg will be passed to the XS code
+    for you. ie the following will work:
+     Rmpf_snprintf($buffer, 12, "hello world");
+    If you prefer to have the resultant string returned (rather
+    than stored in $buffer), use Rmpf_snprintf_ret instead - which will
+    also leave the length of $buffer unaltered.
+
+   $string = Rmpf_snprintf_ret($buffer, $bytes, $format_string, $var);
+
+    As for Rmpf_snprintf, but returns the formatted string, as well as
+    storing it in $buffer. $buffer needs to be large enough to 
+    accommodate the formatted string. The length of $buffer will be
+    unaltered. The length of $string (as reported by perl's length
+    function) will be no greater than $bytes.
 
    ###############################
    ###############################
@@ -931,7 +976,7 @@ __END__
 
    This program is free software; you may redistribute it and/or 
    modify it under the same terms as Perl itself.
-   Copyright 2006-2008, Sisyphus
+   Copyright 2006-2008, 2009, 2010, Sisyphus
 
 =head1 AUTHOR
 

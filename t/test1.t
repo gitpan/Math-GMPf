@@ -138,7 +138,7 @@ else {print "not ok 17\n"}
 
 Rmpf_div_2exp($q, $q, 1);
 
-if(Rmpf_eq($q, $r, 96)) {print "ok 18\n"}
+if(Rmpf_eq($q, $r, 64)) {print "ok 18\n"}
 else {print "not ok 18\n"}
 
 Rmpf_add_ui($q, $r, 1023);
