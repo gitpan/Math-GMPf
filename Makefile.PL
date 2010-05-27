@@ -4,6 +4,10 @@ require 5.006;
 
 $| = 1;
 
+our %args = map { split /\s*=\s*/ } @ARGV;
+our $LIBS = $args{ LIBS } || "-lgmp";
+our $INC = $args{ INC };
+
 print "\nThis module requires gmp-4.2.0 (or later)\n\n";
 
 $use_64_bit_int = 0; # Let perl decide whether to include 64-bit 'long long' support

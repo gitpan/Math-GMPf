@@ -1,5 +1,6 @@
     package Math::GMPf;
     use strict;
+    use Math::GMPf::Random;
     require Exporter;
     *import = \&Exporter::import;
     require DynaLoader;
@@ -46,6 +47,7 @@ use overload
 
     @Math::GMPf::EXPORT_OK = qw(
 __GNU_MP_VERSION __GNU_MP_VERSION_MINOR __GNU_MP_VERSION_PATCHLEVEL
+__GMP_CC __GMP_CFLAGS
 Rmpf_abs Rmpf_add Rmpf_add_ui Rmpf_ceil Rmpf_clear Rmpf_clear_mpf Rmpf_clear_ptr
 Rmpf_cmp Rmpf_cmp_d Rmpf_cmp_si Rmpf_cmp_ui 
 Rmpf_deref2 Rmpf_div Rmpf_div_2exp Rmpf_div_ui
@@ -67,8 +69,13 @@ Rmpf_set_prec_raw Rmpf_set_q Rmpf_set_si Rmpf_set_str Rmpf_set_ui Rmpf_set_z
 Rmpf_sgn Rmpf_sprintf Rmpf_sprintf_ret  Rmpf_snprintf Rmpf_snprintf_ret
 Rmpf_sqrt Rmpf_sqrt_ui Rmpf_sub Rmpf_sub_ui Rmpf_swap Rmpf_trunc 
 Rmpf_ui_div Rmpf_ui_sub Rmpf_urandomb
+fgmp_randseed fgmp_randseed_ui fgmp_randclear
+fgmp_randinit_default fgmp_randinit_mt fgmp_randinit_lc_2exp fgmp_randinit_lc_2exp_size
+fgmp_randinit_set fgmp_randinit_default_nobless fgmp_randinit_mt_nobless
+fgmp_randinit_lc_2exp_nobless fgmp_randinit_lc_2exp_size_nobless fgmp_randinit_set_nobless
+fgmp_urandomb_ui fgmp_urandomm_ui
     );
-    $Math::GMPf::VERSION = '0.30';
+    $Math::GMPf::VERSION = '0.31';
 
     DynaLoader::bootstrap Math::GMPf $Math::GMPf::VERSION;
 
@@ -94,6 +101,11 @@ Rmpf_set_prec_raw Rmpf_set_q Rmpf_set_si Rmpf_set_str Rmpf_set_ui Rmpf_set_z
 Rmpf_sgn Rmpf_sprintf Rmpf_sprintf_ret Rmpf_snprintf Rmpf_snprintf_ret
 Rmpf_sqrt Rmpf_sqrt_ui Rmpf_sub Rmpf_sub_ui Rmpf_swap Rmpf_trunc 
 Rmpf_ui_div Rmpf_ui_sub Rmpf_urandomb
+fgmp_randseed fgmp_randseed_ui fgmp_randclear
+fgmp_randinit_default fgmp_randinit_mt fgmp_randinit_lc_2exp fgmp_randinit_lc_2exp_size
+fgmp_randinit_set fgmp_randinit_default_nobless fgmp_randinit_mt_nobless
+fgmp_randinit_lc_2exp_nobless fgmp_randinit_lc_2exp_size_nobless fgmp_randinit_set_nobless
+fgmp_urandomb_ui fgmp_urandomm_ui
 )]);
 
 sub dl_load_flags {0} # Prevent DynaLoader from complaining and croaking
@@ -293,6 +305,22 @@ sub __GNU_MP_VERSION_MINOR {return ___GNU_MP_VERSION_MINOR()}
 sub __GNU_MP_VERSION_PATCHLEVEL {return ___GNU_MP_VERSION_PATCHLEVEL()}
 sub __GMP_CC {return ___GMP_CC()}
 sub __GMP_CFLAGS {return ___GMP_CFLAGS()}
+
+*fgmp_randseed =                      \&Math::GMPf::Random::Rgmp_randseed;
+*fgmp_randseed_ui =                   \&Math::GMPf::Random::Rgmp_randseed_ui;
+*fgmp_randclear =                     \&Math::GMPf::Random::Rgmp_randclear;
+*fgmp_randinit_default =              \&Math::GMPf::Random::Rgmp_randinit_default;
+*fgmp_randinit_mt =                   \&Math::GMPf::Random::Rgmp_randinit_mt;
+*fgmp_randinit_lc_2exp =              \&Math::GMPf::Random::Rgmp_randinit_lc_2exp;
+*fgmp_randinit_lc_2exp_size =         \&Math::GMPf::Random::Rgmp_randinit_lc_2exp_size;
+*fgmp_randinit_set =                  \&Math::GMPf::Random::Rgmp_randinit_set;
+*fgmp_randinit_default_nobless =      \&Math::GMPf::Random::Rgmp_randinit_default_nobless;
+*fgmp_randinit_mt_nobless =           \&Math::GMPf::Random::Rgmp_randinit_mt_nobless;
+*fgmp_randinit_lc_2exp_nobless =      \&Math::GMPf::Random::Rgmp_randinit_lc_2exp_nobless;
+*fgmp_randinit_lc_2exp_size_nobless = \&Math::GMPf::Random::Rgmp_randinit_lc_2exp_size_nobless;
+*fgmp_randinit_set_nobless =          \&Math::GMPf::Random::Rgmp_randinit_set_nobless;
+*fgmp_urandomb_ui =                   \&Math::GMPf::Random::Rgmp_urandomb_ui;
+*fgmp_urandomm_ui =                   \&Math::GMPf::Random::Rgmp_urandomm_ui;
 
 1;
 
@@ -758,26 +786,102 @@ __END__
     Return non-zero if OP would fit in the respective C data
     type, when truncated to an integer.
 
+   #######################
 
-   In Rmpf_urandomb() (below), @r is an array of 
+   RANDOM NUMBER FUNCTIONS 
+
+   In the random number functions, @r is an array of 
    Math::GMPf objects (one for each random number that is
    required). $how_many is the number of random numbers you 
    want and must be equal to scalar(@r). $bits is simply the
-   number of random bits required. Before calling
-   Rmpf_urandomb(), you first initialise state by calling 
-   Math::GMPz::rand_init(). When you've finished with
-   Rmpf_urandomb, call Math::GMPz::rand_clear(). 
-   With Rmpf_random2() there is no need to call rand_init()
-   and rand_clear().
+   number of random bits required. Before calling the random
+   number functions, $state must be initialised and seeded.
 
-   $state = Math::GMPz::rand_init($z);
-    $z is the seed - a Math::GMPz object.
+   $state = Math::GMPz::rand_init($op); # $op is the seed.
+    Without Math::GMPz, you can't use this function. (There are
+    better alternatives listed immediately below, anyway.)
+    Initialises and seeds $state, ready for use with the random
+    number functions. However, $state has not been blessed into
+    any package, and therefore does not get cleaned up when it 
+    goes out of scope. To avoid memory leaks you therefore need
+    to call 'Math::GMPz::rand_clear($state);' once you have
+    finished with it and before it goes out of scope. Also, it
+    uses the default algorithm. Consider using the following
+    initialisation and seeding routines - they provide a choice of
+    algorithm, and there's no need to call rand_clear() when
+    you've finished with them.
+
+   $state = fgmp_randinit_default();
+    This is the Math::GMPf interface to the gmp library function
+   'gmp_randinit_default'.
+    $state is blessed into package Math::GMPf::Random and will be
+    automatically cleaned up when it goes out of scope.
+    Initialize $state with a default algorithm. This will be a
+    compromise between speed and randomness, and is recommended for
+    applications with no special requirements. Currently this is
+    the gmp_randinit_mt function (Mersenne Twister algorithm).
+
+   $state = fgmp_randinit_mt();
+    This is the Math::GMPf interface to the gmp library function
+   'gmp_randinit_mt'.
+    Currently identical to fgmp_randinit_default().
+
+   $state = fgmp_randinit_lc_2exp($mpz, $ui, $m2exp);
+    This is the Math::GMPf interface to the gmp library function
+    'gmp_randinit_lc_2exp'. $mpz is a Math::GMP or Math::GMPz object,
+    so one of those modules is required in order to make use of this
+    function.
+    $state is blessed into package Math::GMPf::Random and will be
+    automatically cleaned up when it goes out of scope.
+    Initialize $state with a linear congruential algorithm
+    X = ($mpz*X + $ui) mod (2 ** $m2exp). The low bits of X in this
+    algorithm are not very random. The least significant bit will have a
+    period no more than 2, and the second bit no more than 4, etc. For
+    this reason only the high half of each X is actually used. 
+    When a random number of more than m2exp/2 bits is to be generated,
+    multiple iterations of the recurrence are used and the results
+    concatenated. 
+
+   $state = fgmp_randinit_lc_2exp_size($ui);
+    This is the Math::GMPf interface to the gmp library function
+   'gmp_randinit_lc_2exp_size'.
+    $state is blessed into package Math::GMPf::Random and will be
+    automatically cleaned up when it goes out of scope.
+    Initialize state for a linear congruential algorithm as per
+    gmp_randinit_lc_2exp. a, c and m2exp are selected from a table,
+    chosen so that $ui bits (or more) of each X will be used,
+    ie. m2exp/2 >= $ui. 
+    If $ui is bigger than the table data provides then the function fails
+    and dies with an appropriate error message. The maximum value for $ui
+    currently supported is 128. 
+
+   $state2 = fgmp_randinit_set($state1);
+    This is the Math::GMPf interface to the gmp library function
+   'gmp_randinit_set'.
+    $state2 is blessed into package Math::GMPf::Random and will be
+    automatically cleaned up when it goes out of scope.
+    Initialize $state2 with a copy of the algorithm and state from
+    $state1.
+
+   $state = fgmp_randinit_default_nobless();
+   $state = fgmp_randinit_mt_nobless();
+   $state = fgmp_randinit_lc_2exp_nobless($mpz, $ui, $m2exp);
+   $state2 = fgmp_randinit_set_nobless($state1);
+    As for the above comparable function, but $state is not blessed into
+    any package. (Generally not useful - but they're available if you
+    want them.)
+
+   fgmp_randseed($state, $mpz); # $mpz is a Math::GMPz or Math::GMP object
+   fgmp_randseed_ui($state, $ui);
+    These are the Math::GMPz interfaces to the gmp library functions
+    'gmp_randseed' and 'gmp_randseed_ui'.
+    Seed an initialised (but not yet seeded) $state with $mpz/$ui.
+    Either Math::GMP or Math::GMPz is required for 'gmp_randseed'.   
 
    Rmpf_urandomb(@r, $state, $bits, $how_many);
      Generate uniformly distributed random floats, all
      between 0 and 1, with $bits significant bits in the mantissa.
 
-   Math::GMPz::rand_clear($state);
    Rmpf_random2(@r, $limbs, $exp, $how_many);
     Generate random floats of at most $limbs limbs, with long
     strings of zeros and ones in the binary representation.
@@ -785,7 +889,28 @@ __END__
     This function is useful for testing functions and algorithms,
     since this kind of random numbers have proven to be more
     likely to trigger corner-case bugs.  Negative random 
-    numbers are generated when $limbs is negative. 
+    numbers are generated when $limbs is negative.
+
+   $ui = fgmp_urandomb_ui($state, $bits);
+    This is the Math::GMPf interface to the gmp library function
+    'gmp_urandomb_ui'.
+    Return a uniformly distributed random number of $bits bits, ie. in
+    the range 0 to 2 ** ($bits - 1) inclusive. $bits must be less than or
+    equal to the number of bits in an unsigned long. 
+
+   $ui2 = fgmp_urandomm_ui($state, $ui1);
+    This is the Math::GMPf interface to the gmp library function
+    'gmp_urandomm_ui'.
+    Return a uniformly distributed random number in the range 0 to
+    $ui1 - 1, inclusive.  
+
+   fgmp_randclear($state);
+   Math::GMPz::rand_clear($state);
+    Destroys $state, as also does Math::GMPf::Random::DESTROY - three
+    identical functions.
+    Use only if $state is an unblessed object - ie if it was initialised
+    using Math::GMPz::rand_init() or one of the fgmp_randinit*_nobless
+    functions. 
 
     ####################
 
