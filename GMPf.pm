@@ -75,7 +75,7 @@ fgmp_randinit_set fgmp_randinit_default_nobless fgmp_randinit_mt_nobless
 fgmp_randinit_lc_2exp_nobless fgmp_randinit_lc_2exp_size_nobless fgmp_randinit_set_nobless
 fgmp_urandomb_ui fgmp_urandomm_ui
     );
-    $Math::GMPf::VERSION = '0.32';
+    $Math::GMPf::VERSION = '0.33';
 
     DynaLoader::bootstrap Math::GMPf $Math::GMPf::VERSION;
 
@@ -462,9 +462,9 @@ __END__
 
    "$str" simply means a string of symbols that represent a number,
    eg "1234567890987654321234567@7" which might be a base 10 number,
-   or "zsa34760sdfgq123r5@11" which would have to represent a base 36
-   number (because "z" is a valid digit only in base 36). Valid
-   bases for GMP numbers are 2 to 62 (inclusive).
+   or "zsa34760sdfgq123r5@11" which would have to represent at least
+   a base 36 number (because "z" is a valid digit only in bases 36
+   or higher). Valid bases for GMP numbers are 2 to 62 (inclusive).
 
    ########################
 
@@ -584,6 +584,9 @@ __END__
     additional argument that specifies the base of the number can
     be supplied to new(). If $arg is a string and no additional
     argument is supplied, base 10 is assumed.
+    The base may be in the ranges 2..62, -62..-2. Negative
+    values are used to specify that the exponent is in decimal.
+
 
    $rop = Rmpf_init_set($op);
    $rop = Rmpf_init_set_nobless($op);
@@ -974,25 +977,29 @@ __END__
    OTHER
 
    $GMP_version = Math::GMPf::gmp_v;
-    Returns the version of the GMP library (eg 4.1.3). The function
-    is not exportable.
+    Returns the version of the GMP library (eg 4.1.3) being used by
+    Math::GMPf. The function is not exportable.
 
    $GMP_cc = Math::GMPf::__GMP_CC;
    $GMP_cflags = Math::GMPf::__GMP_CFLAGS;
-    These functions are not exportable.
     If Math::GMPf has been built against gmp-4.2.3 or later,
     returns respectively the CC and CFLAGS settings that were used
-    to compile the gmp library.
+    to compile the gmp library against which Math::GMPf was built.
+    (Values are as specified in the gmp.h that was used to build
+    Math::GMPf.)
     Returns undef if Math::GMPf has been built against an earlier
     version of the gmp library.
+    (These functions are in @EXPORT_OK and are therefore exportable
+    by request. They are not listed under the ":mpf" tag.)
 
    $major = Math::GMPf::__GNU_MP_VERSION;
    $minor = Math::GMPf::__GNU_MP_VERSION_MINOR;
    $patchlevel = Math::GMPf::__GNU_MP_VERSION_PATCHLEVEL;
     Returns respectively the major, minor, and patchlevel numbers
-    for the GMP library version used by Math::GMPf. (These 
-    functions are in @EXPORT_OK and are therefore exportable by
-    request.) 
+    for the GMP library version used to build Math::GMPf. Values are
+    as specified in the gmp.h that was used to build Math::GMPf.
+    (These functions are in @EXPORT_OK and are therefore exportable
+    by request. They are not listed under the ":mpf" tag.) 
 
    ################
 
@@ -1101,7 +1108,7 @@ __END__
 
    This program is free software; you may redistribute it and/or 
    modify it under the same terms as Perl itself.
-   Copyright 2006-2008, 2009, 2010, Sisyphus
+   Copyright 2006-2008, 2009, 2010, 2011 Sisyphus
 
 =head1 AUTHOR
 
