@@ -37,7 +37,6 @@ use overload
     '=='   => \&overload_equiv,
     '!='   => \&overload_not_equiv,
     '!'    => \&overload_not,
-    'not'  => \&overload_not,
     '='    => \&overload_copy,
     'abs'  => \&overload_abs,
     '**'   => \&overload_pow,
@@ -75,7 +74,7 @@ fgmp_randinit_set fgmp_randinit_default_nobless fgmp_randinit_mt_nobless
 fgmp_randinit_lc_2exp_nobless fgmp_randinit_lc_2exp_size_nobless fgmp_randinit_set_nobless
 fgmp_urandomb_ui fgmp_urandomm_ui
     );
-    $Math::GMPf::VERSION = '0.33';
+    $Math::GMPf::VERSION = '0.34';
 
     DynaLoader::bootstrap Math::GMPf $Math::GMPf::VERSION;
 
@@ -927,7 +926,7 @@ __END__
      + - * / ** sqrt (Return values have default precision)
      += -= *= /= **= (Precision remains unchanged)
      < <= > >= == != <=>
-     ! not
+     !
      abs (Return value has default precision)
      int (on perl 5.8 only, NA on perl 5.6.
           Return value has default precision.)
@@ -1108,7 +1107,7 @@ __END__
 
    This program is free software; you may redistribute it and/or 
    modify it under the same terms as Perl itself.
-   Copyright 2006-2008, 2009, 2010, 2011 Sisyphus
+   Copyright 2006-2008, 2009, 2010, 2011, 2012 Sisyphus
 
 =head1 AUTHOR
 

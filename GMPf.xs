@@ -20,7 +20,15 @@
 #define SvUOK SvIsUV
 #endif
 
-SV * Rmpf_get_default_prec() {
+#ifndef Newx
+#  define Newx(v,n,t) New(0,v,n,t)
+#endif
+
+#ifndef Newxz
+#  define Newxz(v,n,t) Newz(0,v,n,t)
+#endif
+
+SV * Rmpf_get_default_prec(void) {
      return newSVuv(mpf_get_default_prec());
      }
 
@@ -89,7 +97,7 @@ SV * Rmpf_init2(SV * prec) {
      return obj_ref;
 }
 
-SV * Rmpf_init_nobless() {
+SV * Rmpf_init_nobless(void) {
      mpf_t * mpf_t_obj;
      SV * obj_ref, * obj;
 
@@ -105,7 +113,7 @@ SV * Rmpf_init_nobless() {
 
 }
 
-SV * Rmpf_init() {
+SV * Rmpf_init(void) {
      mpf_t * mpf_t_obj;
      SV * obj_ref, * obj;
 
@@ -1740,7 +1748,7 @@ SV * overload_pow_eq(SV * p, SV * second, SV * third) {
      croak("Invalid argument supplied to Math::GMPf::overload_pow_eq. The function handles only positive 'unsigned long' exponents.");
 }
 
-SV * gmp_v() {
+SV * gmp_v(void) {
      return newSVpv(gmp_version, 0);
 }
 
@@ -1952,7 +1960,7 @@ SV * _itsa(SV * a) {
 }
 
 
-int _has_longlong() {
+int _has_longlong(void) {
 #ifdef USE_64_BIT_INT
     return 1;
 #else
@@ -1960,7 +1968,7 @@ int _has_longlong() {
 #endif
 }
 
-int _has_longdouble() {
+int _has_longdouble(void) {
 #ifdef USE_LONG_DOUBLE
     return 1;
 #else
@@ -1969,7 +1977,7 @@ int _has_longdouble() {
 }
 
 /* Has inttypes.h been included ? */
-int _has_inttypes() {
+int _has_inttypes(void) {
 #ifdef _MSC_VER
 return 0;
 #else
@@ -1981,19 +1989,19 @@ return 0;
 #endif
 }
 
-SV * ___GNU_MP_VERSION() {
+SV * ___GNU_MP_VERSION(void) {
      return newSVuv(__GNU_MP_VERSION);
 }
 
-SV * ___GNU_MP_VERSION_MINOR() {
+SV * ___GNU_MP_VERSION_MINOR(void) {
      return newSVuv(__GNU_MP_VERSION_MINOR);
 }
 
-SV * ___GNU_MP_VERSION_PATCHLEVEL() {
+SV * ___GNU_MP_VERSION_PATCHLEVEL(void) {
      return newSVuv(__GNU_MP_VERSION_PATCHLEVEL);
 }
 
-SV * ___GMP_CC() {
+SV * ___GMP_CC(void) {
 #ifdef __GMP_CC
      char * ret = __GMP_CC;
      return newSVpv(ret, 0);
@@ -2002,7 +2010,7 @@ SV * ___GMP_CC() {
 #endif
 }
 
-SV * ___GMP_CFLAGS() {
+SV * ___GMP_CFLAGS(void) {
 #ifdef __GMP_CFLAGS
      char * ret = __GMP_CFLAGS;
      return newSVpv(ret, 0);
@@ -2018,6 +2026,7 @@ PROTOTYPES: DISABLE
 
 SV *
 Rmpf_get_default_prec ()
+		
 
 void
 Rmpf_set_default_prec (prec)
@@ -2055,9 +2064,11 @@ Rmpf_init2 (prec)
 
 SV *
 Rmpf_init_nobless ()
+		
 
 SV *
 Rmpf_init ()
+		
 
 SV *
 Rmpf_init_set (a)
@@ -3063,6 +3074,7 @@ overload_pow_eq (p, second, third)
 
 SV *
 gmp_v ()
+		
 
 SV *
 wrap_gmp_printf (a, b)
@@ -3094,25 +3106,33 @@ _itsa (a)
 
 int
 _has_longlong ()
+		
 
 int
 _has_longdouble ()
+		
 
 int
 _has_inttypes ()
+		
 
 SV *
 ___GNU_MP_VERSION ()
+		
 
 SV *
 ___GNU_MP_VERSION_MINOR ()
+		
 
 SV *
 ___GNU_MP_VERSION_PATCHLEVEL ()
+		
 
 SV *
 ___GMP_CC ()
+		
 
 SV *
 ___GMP_CFLAGS ()
+		
 

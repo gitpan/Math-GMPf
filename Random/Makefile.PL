@@ -2,7 +2,7 @@ use ExtUtils::MakeMaker;
 my %options = %{
 {
   'TYPEMAPS' => [
-    'typemap'
+    '../typemap'
   ],
   'NAME' => 'Math::GMPf::Random',
   'LIBS' => $LIBS,
