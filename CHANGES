@@ -1,3 +1,8 @@
+0.35
+ - Add Math::GMPf::V
+ - Add overload_inc and overload_dec functions.
+ - Accommodate cross-class overloaded arithmetic with Math::MPFR.
+
 0.34
  - Remove 'not' from overloads. Apparently achieved nothing anyway, and 5.16
    warns that it's invalid.

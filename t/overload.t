@@ -3,7 +3,7 @@ use warnings;
 use Math::GMPf qw(:mpf);
 use Math::BigInt; # for some error checking
 
-print "1..41\n";
+print "1..42\n";
 
 print "# Using gmp version ", Math::GMPf::gmp_v(), "\n";
 
@@ -712,7 +712,30 @@ $mpf1 += 1;
 $ok .= 'f' if Rmpf_get_prec($mpf3) == Rmpf_get_prec($mpf1) && $mpf3 == $mpf1 - 1;
 
 if($ok eq 'abcdef') {print "ok 41\n"}
-else {print "not ok 41 $ok\n"}
+else {
+  warn "\$ok: $ok\n";
+  print "not ok 41\n";
+}
+
+$ok = '';
+
+$mpf3++;
+$ok .= 'a' if $mpf3 == $mpf1;
+
+++$mpf3;
+$ok .= 'b' if $mpf3 == $mpf1 + 1;
+
+$mpf3--;
+$ok .= 'c' if $mpf3 == $mpf1;
+
+--$mpf3;
+$ok .= 'd' if $mpf3 == $mpf1 - 1;
+
+if($ok eq 'abcd') {print "ok 42\n"}
+else {
+  warn "\$ok: $ok\n";
+  print "not ok 42\n";
+}
 
 
 

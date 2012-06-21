@@ -20,6 +20,8 @@ use subs qw( __GNU_MP_VERSION __GNU_MP_VERSION_MINOR __GNU_MP_VERSION_PATCHLEVEL
              __GMP_CC __GMP_CFLAGS);
 
 use overload
+    '++'   => \&overload_inc,
+    '--'   => \&overload_dec,
     '+'    => \&overload_add,
     '-'    => \&overload_sub,
     '*'    => \&overload_mul,
@@ -74,9 +76,10 @@ fgmp_randinit_set fgmp_randinit_default_nobless fgmp_randinit_mt_nobless
 fgmp_randinit_lc_2exp_nobless fgmp_randinit_lc_2exp_size_nobless fgmp_randinit_set_nobless
 fgmp_urandomb_ui fgmp_urandomm_ui
     );
-    $Math::GMPf::VERSION = '0.34';
+    our $VERSION = '0.35';
+    $VERSION = eval $VERSION;
 
-    DynaLoader::bootstrap Math::GMPf $Math::GMPf::VERSION;
+    DynaLoader::bootstrap Math::GMPf $VERSION;
 
     %Math::GMPf::EXPORT_TAGS =(mpf => [qw(
 Rmpf_abs Rmpf_add Rmpf_add_ui Rmpf_ceil Rmpf_clear Rmpf_clear_mpf Rmpf_clear_ptr
@@ -918,13 +921,15 @@ __END__
 
     OPERATOR OVERLOADING
 
-    Overloading works with numbers, strings (base 10 only)
-    and Math::GMPf objects. Strings are coerced into
-    Math::GMPf objects (with default precision).
+    Overloading works with numbers, strings (base 10 only),
+    Math::GMPf objects and, to a limited extent, Math::MPFR
+    objects (iff version 3.13 or later of Math::MPFR has been
+    installed). Strings are coerced into Math::GMPf objects
+    (with default precision).
 
     The following operators are overloaded:
      + - * / ** sqrt (Return values have default precision)
-     += -= *= /= **= (Precision remains unchanged)
+     += -= *= /= **= ++ --(Precision remains unchanged)
      < <= > >= == != <=>
      !
      abs (Return value has default precision)
@@ -936,7 +941,11 @@ __END__
 
     Atempting to use the overloaded operators with objects that
     have been blessed into some package other than 'Math::GMPf'
-    will not work.
+    or 'Math::MPFR' (limited applications) will not work.
+    Math::MPFR objects can be used only with '+', '-', '*', '/'
+    and '**' operators, and will work only if Math::MPFR is at
+    version 3.13 or later - in which case the operation will
+    return a Math::MPFR object.
 
     In those situations where the overload subroutine operates on 2
     perl variables, then obviously one of those perl variables is
@@ -964,7 +973,8 @@ __END__
        but the string is not a valid base 10 number, the subroutine
        croaks with an appropriate error message.
 
-    5. If the variable is a Math::GMPf object then the value of that
+    5. If the variable is a Math::GMPf object (or, for operators
+       specified above, a Math::MPFR object) then the value of that
        object is used.
 
     6. If none of the above is true, then the second variable is
