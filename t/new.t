@@ -130,8 +130,14 @@ if(Math::GMPf::_has_longlong()) {
   else{warn "3i: Should have $f27 == $f28\n"}
 }
 else {
-  if($f27 != $f28) {$ok .= 'i'}
-  else{warn "3i: Should have $f27 != $f28\n"}
+  if(Math::GMPf::_has_longdouble()) {
+    if($f27 == $f28) {$ok .= 'i'}
+    else{warn "3i: Should have $f27 == $f28\n"}
+  }
+  else {
+    if($f27 != $f28) {$ok .= 'i'}
+    else{warn "3i: Should have $f27 != $f28\n"}
+  }
 }
 
 my $f29 = Math::GMPf->new($f26);

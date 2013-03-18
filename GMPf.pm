@@ -76,7 +76,7 @@ fgmp_randinit_set fgmp_randinit_default_nobless fgmp_randinit_mt_nobless
 fgmp_randinit_lc_2exp_nobless fgmp_randinit_lc_2exp_size_nobless fgmp_randinit_set_nobless
 fgmp_urandomb_ui fgmp_urandomm_ui
     );
-    our $VERSION = '0.35';
+    our $VERSION = '0.36';
     $VERSION = eval $VERSION;
 
     DynaLoader::bootstrap Math::GMPf $VERSION;
@@ -1117,7 +1117,7 @@ __END__
 
    This program is free software; you may redistribute it and/or 
    modify it under the same terms as Perl itself.
-   Copyright 2006-2008, 2009, 2010, 2011, 2012 Sisyphus
+   Copyright 2006-2013 Sisyphus
 
 =head1 AUTHOR
 

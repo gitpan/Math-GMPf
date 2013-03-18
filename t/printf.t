@@ -74,13 +74,13 @@ else {print "not ok 1 $ok\n"}
 
 $ok = '';
 my $buffer = 'XOXO' x 10;
-my $buf = $buffer;
+my $buf = "$buffer";
 
 Rmpf_sprintf($buf, "The mpf object: %.0Ff", $mp);
 if ($buf eq 'The mpf object: -1234565') {$ok .= 'a'}
 else {warn "2a got: $buf\n"}
 
-$buf = $buffer;
+$buf = "$buffer";
 $mp *= -1;
 
 my $ret = Rmpf_sprintf_ret($buf, "The mpf object: %.0Ff", $mp);
@@ -89,14 +89,14 @@ else {warn "2b got: $ret\n"}
 if ($buf eq 'The mpf object: 1234565' . "\0" . 'XOXO' x 4) {$ok .= 'c'}
 else {warn "2c got: $buf\n"}
 
-$buf = $buffer;
+$buf = "$buffer";
 my $zeroes = 3;
 
 Rmpf_sprintf($buf, "The mpf object: %.${zeroes}Ff", $mp);
 if ($buf eq 'The mpf object: 1234565.000') {$ok .= 'd'}
 else {warn "2d got: $buf\n"}
 
-$buf = $buffer;
+$buf = "$buffer";
 
 $ret = Rmpf_sprintf_ret($buf, "The mpf object: %.${zeroes}Ff", $mp);
 if ($ret eq 'The mpf object: 1234565.000') {$ok .= 'e'}
