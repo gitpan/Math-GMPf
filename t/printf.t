@@ -5,6 +5,8 @@ use Math::BigInt; # for some error checks
 
 print "1..7\n";
 
+$|++;
+
 print "# Using gmp version ", Math::GMPf::gmp_v(), "\n";
 
 open(WR1, '>', 'out1.txt') or die "Can't open WR1: $!";
@@ -73,38 +75,37 @@ if($ok eq 'abde') {print "ok 1\n"}
 else {print "not ok 1 $ok\n"}
 
 $ok = '';
-my $buffer = 'XOXO' x 10;
-my $buf = "$buffer";
+my $buf;
 
-Rmpf_sprintf($buf, "The mpf object: %.0Ff", $mp);
+Rmpf_sprintf($buf, "The mpf object: %.0Ff", $mp, 40);
 if ($buf eq 'The mpf object: -1234565') {$ok .= 'a'}
 else {warn "2a got: $buf\n"}
 
-$buf = "$buffer";
+#$buf = "$buffer";
 $mp *= -1;
 
-my $ret = Rmpf_sprintf_ret($buf, "The mpf object: %.0Ff", $mp);
-if ($ret eq 'The mpf object: 1234565') {$ok .= 'b'}
+my $ret = Rmpf_sprintf($buf, "The mpf object: %.0Ff", $mp, 40);
+if ($ret == 23) {$ok .= 'b'}
 else {warn "2b got: $ret\n"}
-if ($buf eq 'The mpf object: 1234565' . "\0" . 'XOXO' x 4) {$ok .= 'c'}
+if ($buf eq 'The mpf object: 1234565') {$ok .= 'c'}
 else {warn "2c got: $buf\n"}
 
-$buf = "$buffer";
+#$buf = "$buffer";
 my $zeroes = 3;
 
-Rmpf_sprintf($buf, "The mpf object: %.${zeroes}Ff", $mp);
+Rmpf_sprintf($buf, "The mpf object: %.${zeroes}Ff", $mp, 40);
 if ($buf eq 'The mpf object: 1234565.000') {$ok .= 'd'}
 else {warn "2d got: $buf\n"}
 
-$buf = "$buffer";
+#$buf = "$buffer";
 
-$ret = Rmpf_sprintf_ret($buf, "The mpf object: %.${zeroes}Ff", $mp);
-if ($ret eq 'The mpf object: 1234565.000') {$ok .= 'e'}
+$ret = Rmpf_sprintf($buf, "The mpf object: %.${zeroes}Ff", $mp, 40);
+if ($ret == 27) {$ok .= 'e'}
 else {warn "2e got: $ret\n"}
-if ($buf eq 'The mpf object: 1234565.000' . "\0" . 'XOXO' x 3) {$ok .= 'f'}
+if ($buf eq 'The mpf object: 1234565.000') {$ok .= 'f'}
 else {warn "2f got: $buf\n"}
 
-$ret = Rmpf_sprintf($buf, "$ul");
+$ret = Rmpf_sprintf($buf, "$ul", 40);
 if($ret == 5) {$ok .= 'g'}
 else {warn "2g got: $ret\n"}
 if ($buf eq '56790') {$ok .= 'h'}
@@ -124,20 +125,23 @@ eval {Rmpf_fprintf(\*STDOUT, "%.0Ff", $mbi);};
 if($@ =~ /Unrecognised object/) {$ok .= 'b'}
 else {warn "3b got: $@\n"}
 
-eval {Rmpf_sprintf($buf, "%.0Ff", $mbi);};
+eval {Rmpf_sprintf($buf, "%.0Ff", $mbi, 15);};
 if($@ =~ /Unrecognised object/) {$ok .= 'c'}
 else {warn "3c got: $@\n"}
 
-eval {Rmpf_sprintf_ret($buf, "%.0Ff", $mbi);};
-if($@ =~ /Unrecognised object/) {$ok .= 'd'}
-else {warn "3d got: $@\n"}
+# no longer have Rmpf_sprintf_ret
+#eval {Rmpf_sprintf_ret($buf, "%.0Ff", $mbi);};
+#if($@ =~ /Unrecognised object/) {$ok .= 'd'}
+#else {warn "3d got: $@\n"}
+
+$ok .= 'd';
 
 eval {Rmpf_fprintf(\*STDOUT, "%.0Ff", $mbi, $ul);};
 if($@ =~ /must pass 3 arguments/) {$ok .= 'e'}
 else {warn "3e got: $@\n"}
 
-eval {Rmpf_sprintf($buf, "%.0Ff", $mbi, $ul);};
-if($@ =~ /must pass 3 arguments/) {$ok .= 'f'}
+eval {Rmpf_sprintf($buf, "%.0Ff", $mbi, $ul, 10);};
+if($@ =~ /must pass 4 arguments/) {$ok .= 'f'}
 else {warn "3f got: $@\n"}
 
 if($ok eq 'abcdef') {print "ok 3\n"}
@@ -223,13 +227,14 @@ $ok = '';
 
 $mp *= -1;
 
-$buf = 'X' x 10;
-$ret = Rmpf_snprintf_ret($buf, 5, "%.0Ff", $mp);
+#$buf = 'X' x 10;
 
-if($ret eq '-123') {$ok .= 'a'}
-else {warn "7a: $ret\n"}
+$ret = Rmpf_snprintf($buf, 5, "%.0Ff", $mp, 10);
 
-$ret = Rmpf_snprintf($buf, 6, "%.0Ff", $mp);
+if($buf eq '-123' && $ret == 8) {$ok .= 'a'}
+else {warn "7a: $ret $buf\n"}
+
+$ret = Rmpf_snprintf($buf, 6, "%.0Ff", $mp, 10);
 
 if($ret == 8) {$ok .= 'b'}
 else {warn "7b: $ret\n"}
