@@ -18,7 +18,19 @@ Rmpf_set_default_prec(64);
 my $ui = 123569;
 my $si = -19907;
 my $d = -1.625;
-my $str = '-119.125';
+my $dp;
+
+# Allow "." or "," as the decimal point (according to whichever is valid for the locale).
+eval {Rmpf_init_set_str("-119.125", 10);};
+$dp = '.' unless $@;
+eval {Rmpf_init_set_str("-119,125", 10);};
+$dp = ',' unless $@;
+
+#warn "Decimal point: $dp\n";
+
+my $str = $dp ? "-119${dp}125"
+             : '-119125@-3';
+
 my $str62 = 'zxfy@0';
 my $strn = '12@1';
 

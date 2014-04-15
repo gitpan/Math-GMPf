@@ -85,7 +85,8 @@ $count = 0;
 while(<RD1>) {
      $count = $.;
      chomp;
-     unless($_ eq '0.17e2'x5) {$ok = 0}
+     unless($_ eq '0.17e2'x5 ||
+            $_ eq '0,17e2'x5) {$ok = 0}
 }
 
 if($ok && $count == 1) {print "ok 1\n"}
@@ -97,7 +98,8 @@ $count = 0;
 while(<RD2>) {
      $count = $.;
      chomp;
-     unless($_ eq 'This is the prefix 0.17e2'x5) {$ok = 0}
+     unless($_ eq 'This is the prefix 0.17e2'x5 ||
+            $_ eq 'This is the prefix 0,17e2'x5) {$ok = 0}
 }
 
 if($ok && $count == 1) {print "ok 2\n"}
@@ -109,7 +111,8 @@ $count = 0;
 while(<RD3>) {
      $count = $.;
      chomp;
-     unless($_ eq '0.17e2 and this is the suffix') {$ok = 0}
+     unless($_ eq '0.17e2 and this is the suffix' ||
+            $_ eq '0,17e2 and this is the suffix') {$ok = 0}
 }
 
 if($ok && $count == 5) {print "ok 3\n"}
@@ -121,7 +124,8 @@ $count = 0;
 while(<RD4>) {
      $count = $.;
      chomp;
-     unless($_ eq 'This is the prefix 0.17e2 and this is the suffix') {$ok = 0}
+     unless($_ eq 'This is the prefix 0.17e2 and this is the suffix' ||
+            $_ eq 'This is the prefix 0,17e2 and this is the suffix') {$ok = 0}
 }
 
 if($ok && $count == 5) {print "ok 4\n"}
@@ -137,10 +141,12 @@ while(<RD5>) {
        unless($_ eq 'This is the prefix ') {$ok = 0}
      }
      elsif($. == 6) {
-       unless($_ eq '0.17e2') {$ok = 0}
+       unless($_ eq '0.17e2' ||
+              $_ eq '0,17e2') {$ok = 0}
      }
      else {
-       unless($_ eq '0.17e2This is the prefix ') {$ok = 0}
+       unless($_ eq '0.17e2This is the prefix ' ||
+              $_ eq '0,17e2This is the prefix ') {$ok = 0}
      }
 }
 
@@ -157,7 +163,8 @@ while(<RD6>) {
        unless($_ eq 'This is the prefix ') {$ok = 0}
      }
      else {
-       unless($_ eq '0.17e2 and this is the suffix') {$ok = 0}
+       unless($_ eq '0.17e2 and this is the suffix' ||
+              $_ eq '0,17e2 and this is the suffix') {$ok = 0}
      }
 }
 
@@ -199,12 +206,33 @@ close RD6 or die "Can't close RD6: $!";
 close RD7 or die "Can't close RD7: $!";
 
 open(WR8, '>', 'out1.txt') or die "Can't open WR8: $!";
-print WR8 "1.5e2\n";
+
+my $dp;
+
+# Allow "." or "," as the decimal point (according to whichever is valid for the locale).
+eval {Rmpf_init_set_str("1.5e2", 10);};
+$dp = '.' unless $@;
+eval {Rmpf_init_set_str("1,5e2", 10);};
+$dp = ',' unless $@;
+
+my $to_print = $dp ? "1${dp}5e2\n"
+                   : "15e1\n";
+
+#warn "$to_print";
+#warn "Decimal point: $dp\n";
+
+print WR8 $to_print;
+
 close WR8 or die "Can't close WR8: $!";
 
 open(RD8, '<', 'out1.txt') or die "Can't open RD8: $!";
 $ret = TRmpf_inp_str($mpf, \*RD8, 10);
 close RD8 or die "Can't close RD8: $!";
 
-if($ret == 5 && $mpf == 150) {print "ok 8\n"}
-else {print "not ok 8 $ret $mpf\n"}
+my $returned = $dp ? 5 : 4;
+
+if($ret == $returned && $mpf == 150) {print "ok 8\n"}
+else {
+  warn "8: $ret $mpf\n";
+  print "not ok 8\n";
+}

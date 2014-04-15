@@ -58,7 +58,10 @@ if($_64) {
      ) {$ok .= 'b'}
   else {print "\$int1: $int1\n\$int2: $int2\n"} 
 
-  $int2 -= 0.05; # $int2 is no longer an integer value 
+  {
+  no integer;
+  $int2 -= 5 / 100; # $int2 is no longer an integer value
+  }
 
   if($int2 != -144115188075868217
      && $int2 != "-144115188075868217"

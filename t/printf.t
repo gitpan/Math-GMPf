@@ -93,8 +93,10 @@ else {warn "2c got: $buf\n"}
 #$buf = "$buffer";
 my $zeroes = 3;
 
+# Locale might have decimal point set to ","
 Rmpf_sprintf($buf, "The mpf object: %.${zeroes}Ff", $mp, 40);
-if ($buf eq 'The mpf object: 1234565.000') {$ok .= 'd'}
+if ($buf eq 'The mpf object: 1234565.000' ||
+    $buf eq 'The mpf object: 1234565,000') {$ok .= 'd'}
 else {warn "2d got: $buf\n"}
 
 #$buf = "$buffer";
@@ -102,7 +104,10 @@ else {warn "2d got: $buf\n"}
 $ret = Rmpf_sprintf($buf, "The mpf object: %.${zeroes}Ff", $mp, 40);
 if ($ret == 27) {$ok .= 'e'}
 else {warn "2e got: $ret\n"}
-if ($buf eq 'The mpf object: 1234565.000') {$ok .= 'f'}
+
+# Locale might have decimal point set to ","
+if ($buf eq 'The mpf object: 1234565.000' ||
+    $buf eq 'The mpf object: 1234565,000') {$ok .= 'f'}
 else {warn "2f got: $buf\n"}
 
 $ret = Rmpf_sprintf($buf, "$ul", 40);

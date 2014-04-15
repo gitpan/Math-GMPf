@@ -7,7 +7,7 @@ require Exporter;
 *import = \&Exporter::import;
 require DynaLoader;
 
-$Math::GMPf::Random::VERSION = '0.37';
+$Math::GMPf::Random::VERSION = '0.38';
 
 DynaLoader::bootstrap Math::GMPf::Random $Math::GMPf::Random::VERSION;
 

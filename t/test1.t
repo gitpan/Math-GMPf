@@ -23,7 +23,19 @@ if(!$@) {$have_mpq = 1}
 my $double = 123456.01234544541;
 my $ui = 123456789;
 my $si = -123456788;
-my $str = '21.135@12';
+my $dp;
+
+# Allow "." or "," as the decimal point (according to whichever is valid for the locale).
+eval{Rmpf_init_set_str('21.135@12', 10);};
+$dp = '.' unless $@;
+eval{Rmpf_init_set_str('21,135@12', 10);};
+$dp = ',' unless $@;
+
+my $str = $dp ? "21${dp}135\@12"
+             : '21135@9';
+
+#warn "\$str: $str\n";
+#warn "Decimal point: $dp\n";
 
 my $p = Rmpf_init2(200);
 my $q = Rmpf_init2(Rmpf_get_default_prec);
@@ -85,7 +97,10 @@ else {print "not ok 9\n"}
 Rmpf_set_str($p, $str, 10);
 
 if(Rmpf_get_str($p, 10, 0) eq '0.21135e14') {print "ok 10\n"}
-else {print "not ok 10\n"}
+else {
+  warn "10: ", Rmpf_get_str($p, 10, 0), "\n";
+  print "not ok 10\n";
+}
 
 if($have_mpz) {
   Rmpf_set_z($p, $z);

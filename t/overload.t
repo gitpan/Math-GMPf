@@ -601,7 +601,18 @@ if($@ =~ /Invalid string/) {$ok .= 'q'}
 if($ok eq 'abcdefghijklmnopq') {print "ok 34\n"}
 else {print "not ok 34 $ok\n"}
 
-$mbi = "-111111111111112.34567879";
+my $dp;
+
+# Allow "." or "," as the decimal point (according to whichever is valid for the locale).
+eval{Rmpf_init_set_str("-111111111111112.34567879", 10);};
+$dp = '.' unless $@;
+eval{Rmpf_init_set_str("-111111111111112,34567879", 10);};
+$dp = ',' unless $@;
+
+#warn "Decimal point: $dp\n";
+
+$mbi = $dp ? "-111111111111112${dp}34567879"
+           : "-11111111111111234567879@-8";
 
 $q = $p + $mbi;
 $p = $q - $mbi;
