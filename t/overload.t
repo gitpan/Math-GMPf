@@ -651,7 +651,7 @@ if($p < -0.00081 && $p > -0.000811
    && Math::GMPf::get_refcnt($q) == 1) {print "ok 38\n"}
 else {print "not ok 38\n"}
 
-Rmpf_set_str($p, "1234567.123", 10);
+Rmpf_set_str($p, "1234567${dp}123", 10);
 
 if($p > $mbi &&
    $p >= $mbi &&

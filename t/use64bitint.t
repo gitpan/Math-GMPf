@@ -50,7 +50,11 @@ if($_64) {
     ) {$ok = 'a'}
   else {print "\$int1: $int1\n"}
 
+  #print "\$int1: $int1\n";
+
   my $int2 = Rmpf_init();
+  eval{Rmpf_set_str($int2, '1.5', 10);};
+  $int1 =~ s/\./,/ if $@;
   Rmpf_set_str($int2, $int1, 10);
   $int1 += 14;
   if($int2 - $int1 + 14 == 0

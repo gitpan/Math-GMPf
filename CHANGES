@@ -1,3 +1,8 @@
+0.39
+ - Additional tweaks to t/overload.t and t/use64bitint.t in relation to accommodating
+   the possibility that the underlying gmp library represents the decimal point with
+   a comma.
+
 0.38
  - Fix t/new.t, t/overload.t, t/printf.t, t/test1.t, t/TRmpf_out_str.t, t/use64bitint.t
    to accommodate the possibility that the underlying gmp library represents the decimal

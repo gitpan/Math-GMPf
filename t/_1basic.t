@@ -10,8 +10,8 @@ warn "# Using gmp library version ", Math::GMPf::gmp_v(), "\n";
 warn "# CC is ", Math::GMPf::__GMP_CC, "\n" if defined Math::GMPf::__GMP_CC;
 warn "# CFLAGS are ", Math::GMPf::__GMP_CFLAGS, "\n" if defined Math::GMPf::__GMP_CFLAGS;
 
-if($Math::GMPf::VERSION eq '0.38' && $Math::GMPf::Random::VERSION eq '0.38' &&
-   $Math::GMPf::V::VERSION eq '0.38' &&
+if($Math::GMPf::VERSION eq '0.39' && $Math::GMPf::Random::VERSION eq '0.39' &&
+   $Math::GMPf::V::VERSION eq '0.39' &&
    Math::GMPf::_get_xs_version() eq $Math::GMPf::VERSION) {print "ok 1\n"}
 else {print "not ok 1 $Math::GMPf::VERSION $Math::GMPf::Random::VERSION ", Math::GMPf::_get_xs_version(), "\n"}
 
